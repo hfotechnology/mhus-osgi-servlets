@@ -24,8 +24,8 @@
 	<packaging>bundle</packaging>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>1.4.1-SNAPSHOT</version>
-		<artifactId>mhus-osgi-tools</artifactId>
+		<version>1.4.2</version>
+		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
 	<build>
