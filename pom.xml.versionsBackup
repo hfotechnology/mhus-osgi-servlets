@@ -21,10 +21,10 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.mhus.osgi</groupId>
 	<artifactId>mhus-osgi-servlets</artifactId>
-	<version>1.4.1</version>
+	<version>1.4.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>MHUS OSGi Servlet Tools</name>
-	<description>A set of servlets to improve OSGi frameworks and karaf</description>
+	<name>MHUS OSGi Tools</name>
+	<description>A set of tools to improve OSGi frameworks and karaf</description>
 	<url>http://www.mhus.de</url>
 
 	<licenses>
