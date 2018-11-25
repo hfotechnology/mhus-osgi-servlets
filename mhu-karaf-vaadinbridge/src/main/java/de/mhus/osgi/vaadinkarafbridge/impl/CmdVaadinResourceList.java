@@ -26,7 +26,7 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 import de.mhus.lib.core.console.ConsoleTable;
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 
-@Command(scope = "vaadin", name = "resourceList", description = "List all resource providers")
+@Command(scope = "vaadin", name = "resource-list", description = "List all resource providers")
 @Service
 public class CmdVaadinResourceList implements Action {
 

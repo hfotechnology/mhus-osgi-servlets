@@ -23,7 +23,7 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.osgi.vaadinbridge.BundleWatch;
 
-@Command(scope = "vaadin", name = "watchenabled", description = "Enable / Disable bundle watch")
+@Command(scope = "vaadin", name = "watch-enabled", description = "Enable / Disable bundle watch")
 @Service
 public class CmdWatchEnabled implements Action {
 

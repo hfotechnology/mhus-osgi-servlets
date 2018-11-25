@@ -23,7 +23,7 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 
-@Command(scope = "vaadin", name = "resourceRemove", description = "Remove a resource provider")
+@Command(scope = "vaadin", name = "resource-remove", description = "Remove a resource provider")
 @Service
 public class CmdVaadinResourceRemove implements Action {
 

@@ -22,7 +22,7 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.osgi.vaadinbridge.BundleWatch;
 
-@Command(scope = "vaadin", name = "watchrefresh", description = "Full-Refresh automatic bundle watch")
+@Command(scope = "vaadin", name = "watch-refresh", description = "Full-Refresh automatic bundle watch")
 @Service
 public class CmdWatchRefresh implements Action {
 

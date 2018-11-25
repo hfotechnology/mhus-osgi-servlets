@@ -23,7 +23,7 @@ import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 
-@Command(scope = "vaadin", name = "resourceAdd", description = "Add a resource provider")
+@Command(scope = "vaadin", name = "resource-add", description = "Add a resource provider")
 @Service
 public class CmdVaadinResourceAdd implements Action {
 
