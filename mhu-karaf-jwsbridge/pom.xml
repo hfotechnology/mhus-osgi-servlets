@@ -24,7 +24,7 @@
 	<description>jwskarafbridge OSGi blueprint bundle project.</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>1.4.3</version>
+		<version>1.4.4-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
