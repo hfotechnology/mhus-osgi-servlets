@@ -24,7 +24,7 @@
 	<description>Root servlet to delegate requests</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>1.4.4-SNAPSHOT</version>
+		<version>1.5.0-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
