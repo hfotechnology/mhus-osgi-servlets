@@ -40,13 +40,13 @@ import com.vaadin.sass.SassCompiler;
 import com.vaadin.sass.internal.ScssStylesheet;
 import com.vaadin.sass.internal.resolver.ScssStylesheetResolver;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import de.mhus.osgi.vaadinbridge.Resource;
 import de.mhus.osgi.vaadinbridge.VaadinResourceProvider;
 
-@Component(provide = Servlet.class, properties = { "alias=/VAADIN" }, name="VAADINResources",servicefactory=true)
+@Component(service = Servlet.class, properties = { "alias=/VAADIN" }, name="VAADINResources",servicefactory=true)
 public class VaadinResourcesServlet extends HttpServlet {
 
 	static {

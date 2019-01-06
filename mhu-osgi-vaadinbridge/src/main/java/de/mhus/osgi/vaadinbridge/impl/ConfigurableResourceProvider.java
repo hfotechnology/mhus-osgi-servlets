@@ -23,8 +23,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.service.component.ComponentContext;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
 import de.mhus.osgi.vaadinbridge.Resource;
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 import de.mhus.osgi.vaadinbridge.VaadinResourceProvider;

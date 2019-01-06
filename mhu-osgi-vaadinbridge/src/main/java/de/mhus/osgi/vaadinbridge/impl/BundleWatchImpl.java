@@ -32,9 +32,9 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.service.component.ComponentContext;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import de.mhus.osgi.vaadinbridge.BundleWatch;
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 
@@ -46,7 +46,7 @@ com.vaadin.server: /vaadinBootstrap.js
 com.vaadin.themes: /themes/reindeer,/themes/runo,/themes/liferay,/themes/chameleon,/themes/base
 
  */
-@Component(provide=BundleWatch.class,name="VaadinBridgeBundleWatch",immediate=true)
+@Component(service=BundleWatch.class,name="VaadinBridgeBundleWatch",immediate=true)
 public class BundleWatchImpl implements BundleWatch, BundleListener, ServiceListener {
 	
 	private static final Logger log = Logger.getLogger(BundleWatchImpl.class.getName());

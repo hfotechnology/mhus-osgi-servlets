@@ -29,9 +29,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.ComponentContext;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 
 /*
 
@@ -41,7 +41,7 @@ rule0=.*
 rule0.redirect=
 
  */
-@Component(provide = Servlet.class, properties = "alias=/*", name="RootServlet",servicefactory=true)
+@Component(service = Servlet.class, properties = "alias=/*", name="RootServlet",servicefactory=true)
 public class RootServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;

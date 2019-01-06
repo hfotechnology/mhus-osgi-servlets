@@ -25,12 +25,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.felix.webconsole.SimpleWebConsolePlugin;
 import org.osgi.service.component.ComponentContext;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import de.mhus.lib.core.MXml;
 
-@Component(immediate=true,provide=DummyService.class,name="SystemEnvironment")
+@Component(immediate=true,service=DummyService.class,name="SystemEnvironment")
 public class SystemEnvironment extends SimpleWebConsolePlugin implements DummyService {
 
 	/**

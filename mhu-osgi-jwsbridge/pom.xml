@@ -68,11 +68,6 @@
 			<version>${osgi.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>biz.aQute</groupId>
-			<artifactId>bndlib</artifactId>
-			<version>${bndlib.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-rt-frontend-jaxws</artifactId>
 			<version>${cxf.version}</version>

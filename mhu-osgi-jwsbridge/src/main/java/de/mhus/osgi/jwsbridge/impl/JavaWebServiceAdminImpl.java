@@ -23,9 +23,9 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
-import aQute.bnd.annotation.component.Activate;
-import aQute.bnd.annotation.component.Component;
-import aQute.bnd.annotation.component.Deactivate;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import de.mhus.osgi.jwsbridge.JavaWebService;
 import de.mhus.osgi.jwsbridge.JavaWebServiceAdmin;
 import de.mhus.osgi.jwsbridge.WebServiceInfo;

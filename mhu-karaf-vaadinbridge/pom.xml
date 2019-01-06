@@ -70,5 +70,11 @@
 			<artifactId>mhu-lib-core</artifactId>
 			<version>${mhulib.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bndlib</artifactId>
+            <version>${bndlib.version}</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 </project>

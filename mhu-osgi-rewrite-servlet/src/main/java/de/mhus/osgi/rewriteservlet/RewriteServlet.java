@@ -32,13 +32,13 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 
-import aQute.bnd.annotation.component.Component;
+import org.osgi.service.component.annotations.Component;
 
 /*
 
 
  */
-@Component(provide = Servlet.class, properties = "alias=/rewrite/*", name="RewriteServlet",servicefactory=true)
+@Component(service = Servlet.class, properties = "alias=/rewrite/*", name="RewriteServlet",servicefactory=true)
 public class RewriteServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
