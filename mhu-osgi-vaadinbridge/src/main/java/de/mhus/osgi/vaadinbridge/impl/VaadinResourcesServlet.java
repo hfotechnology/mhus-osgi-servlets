@@ -46,7 +46,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import de.mhus.osgi.vaadinbridge.Resource;
 import de.mhus.osgi.vaadinbridge.VaadinResourceProvider;
 
-@Component(service = Servlet.class, properties = { "alias=/VAADIN" }, name="VAADINResources",servicefactory=true)
+@Component(service = Servlet.class, property = "alias=/VAADIN", name="VAADINResources",servicefactory=true)
 public class VaadinResourcesServlet extends HttpServlet {
 
 	static {
