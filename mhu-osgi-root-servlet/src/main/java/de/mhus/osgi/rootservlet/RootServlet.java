@@ -41,7 +41,7 @@ rule0=.*
 rule0.redirect=
 
  */
-@Component(service = Servlet.class, properties = "alias=/*", name="RootServlet",servicefactory=true)
+@Component(service = Servlet.class, property = "alias=/*", name="RootServlet",servicefactory=true)
 public class RootServlet extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
