@@ -43,6 +43,7 @@
 							de.mhus.osgi.jwsbridge*;version=${project.version}
 						</Export-Package>
 						<Import-Package>
+						    javax.xml.ws;version=2.2.0,
 							*
 						</Import-Package>
 						<Private-Package>
