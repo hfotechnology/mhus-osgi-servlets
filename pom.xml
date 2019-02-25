@@ -21,7 +21,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.mhus.osgi</groupId>
 	<artifactId>mhus-osgi-servlets</artifactId>
-	<version>1.5.0</version>
+	<version>1.5.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>MHUS OSGi Servlet Tools</name>
 	<description>A set of servlets to improve OSGi frameworks and karaf</description>
@@ -47,8 +47,8 @@
 		</developer>
 	</developers>
 	<properties>
-		<osgitools.version>1.5.0</osgitools.version>
-		<mhulib.version>3.5.0</mhulib.version>
+		<osgitools.version>1.5.1-SNAPSHOT</osgitools.version>
+		<mhulib.version>3.5.1-SNAPSHOT</mhulib.version>
 		<ports.version>1.3.7</ports.version>
 		<ports.vaadin.version>1.3.7</ports.vaadin.version>
 
