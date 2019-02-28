@@ -24,7 +24,7 @@
 	<description>Root servlet to delegate requests</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>1.5.1-SNAPSHOT</version>
+		<version>1.6.0-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
@@ -89,12 +89,6 @@
 			<version>1.6</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.webconsole</artifactId>
-			<version>${felix.version}</version>
-			<type>bundle</type>
-		</dependency>
 		<!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
