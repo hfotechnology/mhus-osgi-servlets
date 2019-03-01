@@ -33,7 +33,6 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>${bundle.plugin.version}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
@@ -59,12 +58,10 @@
 			<groupId>de.mhus.osgi</groupId>
 			<artifactId>mhu-osgi-jwsbridge</artifactId>
 			<version>${project.version}</version>
-			<type>bundle</type>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
 			<artifactId>org.apache.karaf.shell.console</artifactId>
-			<version>${karaf.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>de.mhus.lib</groupId>
@@ -73,8 +70,6 @@
         <dependency>
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>bndlib</artifactId>
-            <version>${bndlib.version}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
