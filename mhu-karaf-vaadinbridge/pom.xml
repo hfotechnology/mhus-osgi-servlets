@@ -24,7 +24,7 @@
 	<description>vaadinkarafbridge OSGi bundle.</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>1.6.0-SNAPSHOT</version>
+		<version>1.6.0</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 

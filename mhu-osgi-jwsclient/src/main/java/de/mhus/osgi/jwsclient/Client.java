@@ -65,8 +65,8 @@ public class Client {
 	/**
 	 * Return the named factory or null if not exists.
 	 * 
-	 * @param name
-	 * @return
+	 * @param name The name of the factory
+	 * @return A factory of the name
 	 */
 	protected TargetFactory getFactory(String name) {
 		return factories.get(name);
