@@ -18,6 +18,7 @@ package de.mhus.osgi.jwskarafbridge.impl;
 import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
+import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.osgi.jwsbridge.JavaWebServiceAdmin;
@@ -26,18 +27,19 @@ import de.mhus.osgi.jwsbridge.JavaWebServiceAdmin;
 @Service
 public class CmdRemove implements Action {
 
+    @Reference(optional=true)
 	private JavaWebServiceAdmin admin;
 	@Argument(index=0, name="service", required=true, description="Service Name", multiValued=false)
     String serviceName;
 
 	@Override
 	public Object execute() throws Exception {
+        if (admin == null) {
+            System.out.println("Admin not set - exiting");
+            return null;
+        }
 		admin.closeWebService(serviceName);
 		return null;
 	}
 	
-	public void setAdmin(JavaWebServiceAdmin admin) {
-		this.admin = admin;
-	}
-
 }

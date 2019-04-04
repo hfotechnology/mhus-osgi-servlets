@@ -30,7 +30,7 @@ import de.mhus.osgi.jwsbridge.JavaWebService;
 import de.mhus.osgi.jwsbridge.JavaWebServiceAdmin;
 import de.mhus.osgi.jwsbridge.WebServiceInfo;
 
-@Component(name=JavaWebServiceAdmin.NAME,immediate=true)
+@Component(name=JavaWebServiceAdmin.NAME,immediate=true,service=JavaWebServiceAdmin.class)
 public class JavaWebServiceAdminImpl implements JavaWebServiceAdmin {
 
 	private LinkedList<WebServiceInfoImpl> list = new LinkedList<>();
