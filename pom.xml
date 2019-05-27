@@ -26,7 +26,7 @@
     </parent>
 	<groupId>de.mhus.osgi</groupId>
 	<artifactId>mhus-osgi-servlets</artifactId>
-	<version>1.6.1</version>
+	<version>1.6.2-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>MHUS OSGi Servlet Tools</name>
 	<description>A set of servlets to improve OSGi frameworks and karaf</description>
