@@ -17,18 +17,18 @@ package de.mhus.osgi.vaadinkarafbridge.impl;
 
 import java.io.PrintStream;
 
-import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.Option;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.lib.core.console.ConsoleTable;
+import de.mhus.osgi.api.karaf.AbstractCmd;
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 
 @Command(scope = "vaadin", name = "resource-list", description = "List all resource providers")
 @Service
-public class CmdVaadinResourceList implements Action {
+public class CmdVaadinResourceList extends AbstractCmd {
 
 	@Option(name="-f", aliases="--full", description="Full output",required=false)
 	boolean full = false;
@@ -37,7 +37,7 @@ public class CmdVaadinResourceList implements Action {
 	private VaadinConfigurableResourceProviderAdmin provider;
 
 	@Override
-	public Object execute() throws Exception {
+	public Object execute2() throws Exception {
 		PrintStream out = System.out;
 		//session.getConsole();
 		ConsoleTable table = new ConsoleTable(full);

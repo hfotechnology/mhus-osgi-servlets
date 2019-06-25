@@ -15,17 +15,17 @@
  */
 package de.mhus.osgi.vaadinkarafbridge.impl;
 
-import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
+import de.mhus.osgi.api.karaf.AbstractCmd;
 import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 
 @Command(scope = "vaadin", name = "debug", description = "Enable / Disable debug mode")
 @Service
-public class CmdVaadinDebug implements Action {
+public class CmdVaadinDebug extends AbstractCmd {
 
 	@Argument(index=0, name="debug", required=true, description="Debug Mode", multiValued=false)
     boolean debug;
@@ -34,7 +34,7 @@ public class CmdVaadinDebug implements Action {
 	private VaadinConfigurableResourceProviderAdmin provider;
 
 	@Override
-	public Object execute() throws Exception {
+	public Object execute2() throws Exception {
 		
 		provider.setDebug(debug);
 		

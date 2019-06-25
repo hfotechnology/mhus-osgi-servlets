@@ -68,6 +68,10 @@
 			<artifactId>mhu-lib-core</artifactId>
 		</dependency>
         <dependency>
+            <groupId>de.mhus.osgi</groupId>
+            <artifactId>mhu-osgi-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>biz.aQute.bnd</groupId>
             <artifactId>bndlib</artifactId>
         </dependency>

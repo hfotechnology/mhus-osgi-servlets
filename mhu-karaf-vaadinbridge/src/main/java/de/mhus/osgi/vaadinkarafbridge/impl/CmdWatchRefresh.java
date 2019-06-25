@@ -15,22 +15,22 @@
  */
 package de.mhus.osgi.vaadinkarafbridge.impl;
 
-import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
+import de.mhus.osgi.api.karaf.AbstractCmd;
 import de.mhus.osgi.vaadinbridge.BundleWatch;
 
 @Command(scope = "vaadin", name = "watch-refresh", description = "Full-Refresh automatic bundle watch")
 @Service
-public class CmdWatchRefresh implements Action {
+public class CmdWatchRefresh extends AbstractCmd {
 
 	@Reference
 	private BundleWatch watch;
 
 	@Override
-	public Object execute() throws Exception {
+	public Object execute2() throws Exception {
 		
 		watch.refreshAll();
 		

@@ -15,17 +15,17 @@
  */
 package de.mhus.osgi.jwskarafbridge.impl;
 
-import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
+import de.mhus.osgi.api.karaf.AbstractCmd;
 import de.mhus.osgi.jwsbridge.JavaWebServiceAdmin;
 
 @Command(scope = "jws", name = "stop", description = "Stops A Web Services")
 @Service
-public class CmdStop implements Action {
+public class CmdStop extends AbstractCmd {
 
     @Reference(optional=true)
 	private JavaWebServiceAdmin admin;
@@ -33,7 +33,7 @@ public class CmdStop implements Action {
     String serviceName;
 
 	@Override
-	public Object execute() throws Exception {
+	public Object execute2() throws Exception {
         if (admin == null) {
             System.out.println("Admin not set - exiting");
             return null;

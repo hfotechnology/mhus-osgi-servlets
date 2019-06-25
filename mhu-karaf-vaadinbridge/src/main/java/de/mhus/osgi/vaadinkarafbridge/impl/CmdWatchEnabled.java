@@ -15,17 +15,17 @@
  */
 package de.mhus.osgi.vaadinkarafbridge.impl;
 
-import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Argument;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
+import de.mhus.osgi.api.karaf.AbstractCmd;
 import de.mhus.osgi.vaadinbridge.BundleWatch;
 
 @Command(scope = "vaadin", name = "watch-enabled", description = "Enable / Disable bundle watch")
 @Service
-public class CmdWatchEnabled implements Action {
+public class CmdWatchEnabled extends AbstractCmd {
 
 	@Argument(index=0, name="enabled", required=false, description="Enable or disable watch mode", multiValued=false)
     Boolean enabled;
@@ -34,7 +34,7 @@ public class CmdWatchEnabled implements Action {
 	private BundleWatch watch;
 
 	@Override
-	public Object execute() throws Exception {
+	public Object execute2() throws Exception {
 		
 		if (enabled == null) {
 			System.out.println("Watch enabled: " + watch.isEnabled());

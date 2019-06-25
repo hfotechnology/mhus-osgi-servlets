@@ -17,24 +17,24 @@ package de.mhus.osgi.jwskarafbridge.impl;
 
 import java.io.PrintStream;
 
-import org.apache.karaf.shell.api.action.Action;
 import org.apache.karaf.shell.api.action.Command;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
 import de.mhus.lib.core.console.ConsoleTable;
+import de.mhus.osgi.api.karaf.AbstractCmd;
 import de.mhus.osgi.jwsbridge.JavaWebServiceAdmin;
 import de.mhus.osgi.jwsbridge.WebServiceInfo;
 
 @Command(scope = "jws", name = "list", description = "List current Web Services")
 @Service
-public class CmdList implements Action {
+public class CmdList extends AbstractCmd {
 
     @Reference(optional=true)
 	private JavaWebServiceAdmin admin;
 
 	@Override
-	public Object execute() throws Exception {
+	public Object execute2() throws Exception {
 	    if (admin == null) {
 	        System.out.println("Admin not set - exiting");
 	        return null;
