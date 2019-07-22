@@ -18,6 +18,7 @@ package de.mhus.osgi.jwskarafbridge.impl;
 import java.io.PrintStream;
 
 import org.apache.karaf.shell.api.action.Command;
+import org.apache.karaf.shell.api.action.Option;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
@@ -33,6 +34,9 @@ public class CmdList extends AbstractCmd {
     @Reference(optional=true)
 	private JavaWebServiceAdmin admin;
 
+    @Option(name = "-ct", aliases = { "--console-table" }, description = "Console table options", required = false, multiValued = false)
+    String consoleTable;
+
 	@Override
 	public Object execute2() throws Exception {
 	    if (admin == null) {
@@ -41,7 +45,7 @@ public class CmdList extends AbstractCmd {
 	    }
 		PrintStream out = System.out;
 		//session.getConsole();
-		ConsoleTable table = new ConsoleTable();
+		ConsoleTable table = new ConsoleTable(consoleTable);
 		table.setHeaderValues("Id","Name","Bundle","Status","Binding");
 		
 		for (WebServiceInfo info : admin.getWebServices()) {

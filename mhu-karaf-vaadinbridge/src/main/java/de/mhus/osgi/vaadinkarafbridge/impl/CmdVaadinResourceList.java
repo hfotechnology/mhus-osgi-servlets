@@ -30,8 +30,8 @@ import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 @Service
 public class CmdVaadinResourceList extends AbstractCmd {
 
-	@Option(name="-f", aliases="--full", description="Full output",required=false)
-	boolean full = false;
+    @Option(name = "-ct", aliases = { "--console-table" }, description = "Console table options", required = false, multiValued = false)
+    String consoleTable;
 
 	@Reference
 	private VaadinConfigurableResourceProviderAdmin provider;
@@ -40,7 +40,7 @@ public class CmdVaadinResourceList extends AbstractCmd {
 	public Object execute2() throws Exception {
 		PrintStream out = System.out;
 		//session.getConsole();
-		ConsoleTable table = new ConsoleTable(full);
+		ConsoleTable table = new ConsoleTable(consoleTable);
 		table.setHeaderValues("Bundle","Resources");
 		for (String s : provider.getResourceBundles()) {
 			
