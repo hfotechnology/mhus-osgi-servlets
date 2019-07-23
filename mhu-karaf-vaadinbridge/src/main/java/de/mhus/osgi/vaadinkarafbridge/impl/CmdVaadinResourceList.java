@@ -18,7 +18,6 @@ package de.mhus.osgi.vaadinkarafbridge.impl;
 import java.io.PrintStream;
 
 import org.apache.karaf.shell.api.action.Command;
-import org.apache.karaf.shell.api.action.Option;
 import org.apache.karaf.shell.api.action.lifecycle.Reference;
 import org.apache.karaf.shell.api.action.lifecycle.Service;
 
@@ -30,9 +29,6 @@ import de.mhus.osgi.vaadinbridge.VaadinConfigurableResourceProviderAdmin;
 @Service
 public class CmdVaadinResourceList extends AbstractCmd {
 
-    @Option(name = "-ct", aliases = { "--console-table" }, description = "Console table options", required = false, multiValued = false)
-    String consoleTable;
-
 	@Reference
 	private VaadinConfigurableResourceProviderAdmin provider;
 
@@ -40,7 +36,7 @@ public class CmdVaadinResourceList extends AbstractCmd {
 	public Object execute2() throws Exception {
 		PrintStream out = System.out;
 		//session.getConsole();
-		ConsoleTable table = new ConsoleTable(consoleTable);
+		ConsoleTable table = new ConsoleTable(tableAll, tblOpt);
 		table.setHeaderValues("Bundle","Resources");
 		for (String s : provider.getResourceBundles()) {
 			
