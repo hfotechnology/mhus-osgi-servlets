@@ -36,7 +36,7 @@ public class CmdVaadinResourceList extends AbstractCmd {
 	public Object execute2() throws Exception {
 		PrintStream out = System.out;
 		//session.getConsole();
-		ConsoleTable table = new ConsoleTable(tableAll, tblOpt);
+		ConsoleTable table = new ConsoleTable(tblOpt);
 		table.setHeaderValues("Bundle","Resources");
 		for (String s : provider.getResourceBundles()) {
 			

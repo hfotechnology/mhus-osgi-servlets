@@ -41,7 +41,7 @@ public class CmdList extends AbstractCmd {
 	    }
 		PrintStream out = System.out;
 		//session.getConsole();
-		ConsoleTable table = new ConsoleTable(tableAll, tblOpt);
+		ConsoleTable table = new ConsoleTable(tblOpt);
 		table.setHeaderValues("Id","Name","Bundle","Status","Binding");
 		
 		for (WebServiceInfo info : admin.getWebServices()) {
