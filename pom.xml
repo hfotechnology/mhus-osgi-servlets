@@ -56,8 +56,6 @@
 		<module>mhu-osgi-jwsbridge</module>
 		<module>mhu-karaf-jwsbridge</module>
 		<module>mhu-osgi-jwsclient</module>
-		<module>mhu-osgi-vaadinbridge</module>
-		<module>mhu-karaf-vaadinbridge</module>
 		<module>mhu-osgi-web-console</module>
 		<module>mhu-osgi-root-servlet</module>
 		<module>mhu-osgi-rewrite-servlet</module>
