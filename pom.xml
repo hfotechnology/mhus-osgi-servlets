@@ -21,17 +21,19 @@
 	<modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.mhus.lib</groupId>
-        <version>6.4.0</version>
+        <version>6.4.1-SNAPSHOT</version>
         <artifactId>mhus-karaf</artifactId>
     </parent>
 	<groupId>de.mhus.osgi</groupId>
 	<artifactId>mhus-osgi-servlets</artifactId>
-	<version>6.3.0</version>
+	<version>6.3.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>MHUS OSGi Servlet Tools</name>
 	<description>A set of servlets to improve OSGi frameworks and karaf</description>
 	<url>http://www.mhus.de</url>
-
+    <properties>
+        <mhus-osgi-servlets.version>${project.version}</mhus-osgi-servlets.version>
+    </properties>
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
