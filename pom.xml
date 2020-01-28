@@ -60,7 +60,9 @@
 		<module>mhu-osgi-jwsclient</module>
 		<module>mhu-osgi-web-console</module>
 		<module>mhu-osgi-root-servlet</module>
+        <module>mhu-osgi-dump-servlet</module>
 		<module>mhu-osgi-rewrite-servlet</module>
+        <module>kube-health-servlet</module>
 	</modules>
 
 </project>
