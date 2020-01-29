@@ -55,6 +55,7 @@ public class HealthServlet extends HttpServlet {
     public static final int WARN_INT = 4;
     public static final int INFO_INT = 6;
     public static final int DEBUG_INT = 7;
+    public static final int ALL_INT = 100;
     
     private static final long serialVersionUID = 1L;
     private Properties props;
@@ -120,7 +121,7 @@ public class HealthServlet extends HttpServlet {
             }
         }
         if (logPatterns.size() == 0) {
-            logPatterns.add(Pattern.compile("java\\.lang\\.OutOfMemoryError: Java heap space"));
+            logPatterns.add(Pattern.compile(".* java\\.lang\\.OutOfMemoryError:.*"));
         }
         
         if (logEnabled) {
@@ -239,7 +240,7 @@ public class HealthServlet extends HttpServlet {
         try {
             if (event != null) {
                 int sl = event.getLevel().getSyslogEquivalent();
-                if (sl >= logLevel) return;
+                if (sl > logLevel) return;
                 String msg = event.getMessage();
                 for (Pattern pattern : logPatterns) {
                     if (pattern.matcher(msg).matches())
@@ -268,6 +269,9 @@ public class HealthServlet extends HttpServlet {
                     break;
                 case "error":
                     minLevel = ERROR_INT;
+                    break;
+                case "all":
+                    minLevel = ALL_INT;
                     break;
             }
         }
