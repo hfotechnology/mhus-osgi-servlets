@@ -19,12 +19,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>mhu-osgi-jwsbridge</artifactId>
-	<description>jwsbridge OSGi bundle project.</description>
+	<artifactId>mhu-osgi-dump-servlet</artifactId>
 	<packaging>bundle</packaging>
+	<description>Root servlet to delegate requests</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>6.4.0-SNAPSHOT</version>
+		<version>6.3.1-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
@@ -38,16 +38,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>
-							de.mhus.osgi.jwsbridge*;version=${project.version}
-						</Export-Package>
-						<Import-Package>
-						    javax.xml.ws;version=2.2.0,
-							*
-						</Import-Package>
-						<Private-Package>
-							de.mhus.osgi.jwsbridge.impl
-						</Private-Package>
+						<Private-Package>de.mhus.osgi.dumpservlet*</Private-Package>
+						<Import-Package>*</Import-Package>
 						<Service-Component>*</Service-Component>
 					</instructions>
 				</configuration>
@@ -65,8 +57,20 @@
 			<artifactId>org.osgi.compendium</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<groupId>org.apache.karaf.shell</groupId>
+			<artifactId>org.apache.karaf.shell.console</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>
