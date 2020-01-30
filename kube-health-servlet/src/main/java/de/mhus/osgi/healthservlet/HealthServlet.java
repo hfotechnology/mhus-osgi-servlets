@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -31,6 +32,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.felix.hc.api.HealthCheck;
+import org.apache.felix.hc.api.Result;
+import org.apache.felix.hc.api.Result.Status;
+import org.apache.felix.hc.api.ResultLog.Entry;
 import org.apache.karaf.log.core.LogService;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
@@ -69,6 +74,8 @@ public class HealthServlet extends HttpServlet {
     private HashSet<Pattern> logPatterns;
     private Set<String>  logFindings = Collections.synchronizedSet(new HashSet<>());
     private boolean logResetFinding;
+    private boolean checkEnabled;
+    private HashSet<String> checkIgnore;
     private static Logger log = Logger.getLogger(HealthServlet.class.getCanonicalName());
 
     @Activate
@@ -124,6 +131,15 @@ public class HealthServlet extends HttpServlet {
             logPatterns.add(Pattern.compile(".* java\\.lang\\.OutOfMemoryError:.*"));
         }
         
+        // health check
+        checkEnabled = Boolean.parseBoolean(props.getProperty("check.enabled", "true"));
+        checkIgnore = new HashSet<>();
+        for (String part : props.getProperty("check.ignore", "").split(",")) {
+            part = part.trim();
+            if (part.length() > 0)
+                checkIgnore.add(part);
+        }
+
         if (logEnabled) {
             PaxAppender appender = event -> printEvent(event);
             tracker = new LogServiceTracker(ctx.getBundleContext(), LogService.class, null, appender);
@@ -147,19 +163,41 @@ public class HealthServlet extends HttpServlet {
 
         if (System.currentTimeMillis() < startChecking ) {
             res.setContentType("text/plain");
-            PrintWriter out = res.getWriter();
-            out.println("wait: Wait after start");
-            out.println("status: ok");
-            out.flush();
-            out.close();
-            return;
+            
+            // disable wait if all bundles are active
+            boolean healthy = true;
+            if (bundlesEnabled) {
+                for (Bundle bundle : ctx.getBundleContext().getBundles()) {
+                    if (bundle.getState() != Bundle.ACTIVE) {
+                        if (bundlesIgnore.contains(bundle.getSymbolicName()))
+                            continue;
+                        healthy = false;
+                        break;
+                    }
+                }
+                if (healthy)
+                    startChecking = 0;
+            } else
+                healthy = false;
+
+            if (!healthy) {
+                PrintWriter out = res.getWriter();
+                long time = System.currentTimeMillis();
+                out.println("time: " + time + " " + new Date(time));
+                out.println("wait: Wait after start");
+                out.println("status: ok");
+                out.flush();
+                out.close();
+                return;
+            }
         }
         
         boolean healthy = true;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintWriter out = new PrintWriter(baos);
-        
+        long time = System.currentTimeMillis();
+        out.println("time: " + time + " " + new Date(time));
         // check if bundles are ok
         if (bundlesEnabled) {
             for (Bundle bundle : ctx.getBundleContext().getBundles()) {
@@ -179,6 +217,27 @@ public class HealthServlet extends HttpServlet {
                 out.println("Log: " + finding);
             if (logResetFinding)
                 logFindings.clear();
+        }
+        
+        // check felix health check
+        if (checkEnabled) {
+            for (HealthCheck check : Osgi.getServices(HealthCheck.class, null)) {
+                try {
+                    String name = check.toString();
+                    int pos = name.indexOf('@');
+                    if (pos > 0) name = name.substring(0,pos);
+                    if (checkIgnore.contains(name)) continue;
+                    
+                    Result status = check.execute();
+                    for (Entry entry : status) {
+                        out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
+                        if (entry.getStatus() != Status.OK)
+                            healthy = false;
+                    }
+                } catch (Throwable t) {
+                    log.throwing("","",t);
+                }
+            }
         }
         
         if (!healthy) {
