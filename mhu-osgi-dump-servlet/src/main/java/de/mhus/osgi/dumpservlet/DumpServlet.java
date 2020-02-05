@@ -110,8 +110,8 @@ public class DumpServlet extends HttpServlet {
     }
 
     private void writeTo(HttpServletRequest req, PrintStream out) throws IOException, InterruptedException {
-        out.println("--- Start " + new Date());
-        out.println(req.getMethod() + " " + req.getPathInfo());
+        out.println("----- Request " + new Date() + " from " + req.getRemoteAddr());
+        out.println(req.getMethod() + " " + req.getPathInfo() + " " + req.getQueryString());
         Enumeration<String> headerNames = req.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String name = headerNames.nextElement();
