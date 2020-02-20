@@ -51,10 +51,10 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 @Component(
         service = Servlet.class,
-        property = "alias=/health/*",
-        name = "HealthServlet",
+        property = "alias=/ready/*",
+        name = "ReadyServlet",
         servicefactory = true)
-public class HealthServlet extends HttpServlet {
+public class ReadyServlet extends HttpServlet {
 
     public static final int ERROR_INT = 3;
     public static final int WARN_INT = 4;
@@ -65,7 +65,6 @@ public class HealthServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private Properties props;
     private ComponentContext ctx;
-    private long startChecking;
     private HashSet<String> bundlesIgnore;
     private LogServiceTracker tracker;
     private boolean bundlesEnabled;
@@ -76,13 +75,13 @@ public class HealthServlet extends HttpServlet {
     private boolean logResetFinding;
     private boolean checkEnabled;
     private HashSet<String> checkIgnore;
-    private static Logger log = Logger.getLogger(HealthServlet.class.getCanonicalName());
+    private static Logger log = Logger.getLogger(ReadyServlet.class.getCanonicalName());
 
     @Activate
     public void activate(ComponentContext ctx) {
         this.ctx = ctx;
         props = new Properties();
-        File f = new File("etc/healthservlet.properties");
+        File f = new File("etc/readyservlet.properties");
         if (f.exists()) {
             log.info("Load config file " + f);
             try {
@@ -95,7 +94,6 @@ public class HealthServlet extends HttpServlet {
         } else {
             log.warning("Config file not found");
         }
-        startChecking = System.currentTimeMillis() + Long.parseLong(props.getProperty("system.waitAfterStart", "60000"));
         
         // bundles
         bundlesEnabled = Boolean.parseBoolean(props.getProperty("bundles.enabled", "true"));
@@ -113,9 +111,9 @@ public class HealthServlet extends HttpServlet {
         }
         
         // log messages
-        logEnabled = Boolean.parseBoolean(props.getProperty("log.enabled", "true"));
+        logEnabled = Boolean.parseBoolean(props.getProperty("log.enabled", "false"));
         logLevel = getMinLevel(props.getProperty("log.level", "DEBUG"));
-        logResetFinding = Boolean.parseBoolean(props.getProperty("log.resetFindings", "false"));
+        logResetFinding = Boolean.parseBoolean(props.getProperty("log.resetFindings", "true"));
         logPatterns = new HashSet<>();
         for (Object nameO : props.keySet()) {
             String name = nameO.toString();
@@ -155,43 +153,12 @@ public class HealthServlet extends HttpServlet {
         this.ctx = null;
     }
 
-    public HealthServlet() {}
+    public ReadyServlet() {}
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
 
-        if (System.currentTimeMillis() < startChecking ) {
-            res.setContentType("text/plain");
-            
-            // disable wait if all bundles are active
-            boolean healthy = true;
-            if (bundlesEnabled) {
-                for (Bundle bundle : ctx.getBundleContext().getBundles()) {
-                    if (bundle.getState() != Bundle.ACTIVE) {
-                        if (bundlesIgnore.contains(bundle.getSymbolicName()))
-                            continue;
-                        healthy = false;
-                        break;
-                    }
-                }
-                if (healthy)
-                    startChecking = 0;
-            } else
-                healthy = false;
-
-            if (!healthy) {
-                PrintWriter out = res.getWriter();
-                long time = System.currentTimeMillis();
-                out.println("time: " + time + " " + new Date(time));
-                out.println("wait: Wait after start");
-                out.println("status: ok");
-                out.flush();
-                out.close();
-                return;
-            }
-        }
-        
         boolean healthy = true;
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -232,7 +199,7 @@ public class HealthServlet extends HttpServlet {
                     for (Entry entry : status) {
                         out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
                         Status s = entry.getStatus();
-                        if (s != Status.OK && s != Status.WARN )
+                        if (s != Status.OK)
                             healthy = false;
                     }
                 } catch (Throwable t) {
@@ -258,7 +225,7 @@ public class HealthServlet extends HttpServlet {
         res.getWriter().flush();
         res.getWriter().close();
         if (!healthy) {
-            log.severe("Health check failed:\n" + content);
+            log.severe("Ready check failed:\n" + content);
         }
     }
 
