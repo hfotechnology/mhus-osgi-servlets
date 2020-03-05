@@ -58,7 +58,7 @@ import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 @Component(
         service = Servlet.class,
-        property = "alias=/ready/*",
+        property = "alias=/system/ready/*",
         name = "ReadyServlet",
         servicefactory = true)
 public class ReadyServlet extends HttpServlet {

@@ -14,18 +14,10 @@
 package de.mhus.osgi.healthservlet;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -33,64 +25,68 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.felix.hc.api.HealthCheck;
-import org.apache.felix.hc.api.Result;
 import org.apache.felix.hc.api.Result.Status;
-import org.apache.felix.hc.api.ResultLog.Entry;
-import org.apache.felix.hc.api.execution.HealthCheckExecutionOptions;
-import org.apache.felix.hc.api.execution.HealthCheckExecutionResult;
 import org.apache.felix.hc.api.execution.HealthCheckExecutor;
-import org.apache.felix.hc.api.execution.HealthCheckSelector;
 import org.apache.karaf.log.core.LogService;
-import org.ops4j.pax.logging.spi.PaxAppender;
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.util.tracker.ServiceTracker;
-import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @Component(
         service = Servlet.class,
-        property = "alias=/health/*",
+        property = "alias=/system/health/*",
         name = "HealthServlet",
-        servicefactory = true)
+        servicefactory = true,
+        configurationPolicy = ConfigurationPolicy.OPTIONAL,
+        configurationPid = "de.mhus.osgi.healthservlet.HealthServlet"
+        )
+@Designate(ocd = HealthServlet.Config.class)
 public class HealthServlet extends HttpServlet {
 
-    public static final int ERROR_INT = 3;
-    public static final int WARN_INT = 4;
-    public static final int INFO_INT = 6;
-    public static final int DEBUG_INT = 7;
-    public static final int ALL_INT = 100;
-    
     private static final long serialVersionUID = 1L;
-    private Properties props;
     private ComponentContext ctx;
     private long startChecking;
-    private HashSet<String> bundlesIgnore;
     private LogServiceTracker tracker;
-    private boolean bundlesEnabled;
-    private boolean logEnabled;
-    private int logLevel;
-    private HashSet<Pattern> logPatterns;
-    private Set<String>  logFindings = Collections.synchronizedSet(new HashSet<>());
-    private boolean logResetFinding;
-    private boolean checkEnabled;
-    private HashSet<String> checkIgnore;
     private static Logger log = Logger.getLogger(HealthServlet.class.getCanonicalName());
 
     private HealthCheckExecutor healthCheckExecutor;
-    private boolean checkCombineTagsWithOr;
-    private boolean checkForceInstantExecution;
-    private String checkOverrideGlobalTimeoutStr;
-    private String checkTags;
+    private ConfigTemplate config;
 
+    @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes",id = "de.mhus.osgi.healthservlet.HealthServlet")
+    public @interface Config {
+        @AttributeDefinition(name = "Wait After Start", description = "ms before activation")
+        long waitAfterStart() default 60000;
+        @AttributeDefinition(name = "Bundles Ignore", description = "List of Bundles to ignore (separate by comma)")
+        String[] bundlesIgnore() default {
+            "org.apache.karaf.features.extension",
+            "org.apache.aries.blueprint.core.compatibility",
+            "org.apache.karaf.shell.console,org.jline.terminal-jansi"
+        };
+        @AttributeDefinition(name = "Enable Bundle Check", description = "Validate if all bundles are active")
+        boolean bundlesEnabled() default true;
+        @AttributeDefinition(name = "Enable Log Check", description = "Introspect the own logs and alert for patterns")
+        boolean logEnabled() default true;
+        @AttributeDefinition(name = "Log Level To Check", description = "5=Debug")
+        int logLevel() default 5;
+        @AttributeDefinition(name = "Log Patterns", description = "List of patterns to watch for")
+        String[] logPatterns() default {};
+        boolean logResetFinding() default false;
+        boolean checkEnabled() default true;
+        String[] checkIgnore() default {};
+        boolean checkCombineTagsWithOr() default false;
+        boolean checkForceInstantExecution() default false;
+        String checkOverrideGlobalTimeoutStr() default "";
+        String checkTags() default "*";
+    }
+    
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     public void setHealthCheckExecutor(HealthCheckExecutor healthCheckExecutor) {
         log.info("Found healthCheckExecutor");
@@ -98,74 +94,14 @@ public class HealthServlet extends HttpServlet {
     }
     
     @Activate
-    public void activate(ComponentContext ctx) {
+    public void activate(ComponentContext ctx, Config c) {
         this.ctx = ctx;
-        props = new Properties();
-        File f = new File("etc/healthservlet.properties");
-        if (f.exists()) {
-            log.info("Load config file " + f);
-            try {
-                FileInputStream is = new FileInputStream(f);
-                props.load(is);
-                is.close();
-            } catch (IOException e) {
-                log.warning(e.toString());
-            }
-        } else {
-            log.warning("Config file not found");
-        }
-        startChecking = System.currentTimeMillis() + Long.parseLong(props.getProperty("system.waitAfterStart", "60000"));
-        
-        // bundles
-        bundlesEnabled = Boolean.parseBoolean(props.getProperty("bundles.enabled", "true"));
-        bundlesIgnore = new HashSet<>();
-        for (String part : props.getProperty("bundles.ignore", "").split(",")) {
-            part = part.trim();
-            if (part.length() > 0)
-                bundlesIgnore.add(part);
-        }
-        if (bundlesIgnore.size() == 0) {
-            bundlesIgnore.add("org.apache.karaf.features.extension");
-            bundlesIgnore.add("org.apache.aries.blueprint.core.compatibility");
-            bundlesIgnore.add("org.apache.karaf.shell.console");
-            bundlesIgnore.add("org.jline.terminal-jansi");
-        }
-        
-        // log messages
-        logEnabled = Boolean.parseBoolean(props.getProperty("log.enabled", "true"));
-        logLevel = getMinLevel(props.getProperty("log.level", "DEBUG"));
-        logResetFinding = Boolean.parseBoolean(props.getProperty("log.resetFindings", "false"));
-        logPatterns = new HashSet<>();
-        for (Object nameO : props.keySet()) {
-            String name = nameO.toString();
-            if (name.startsWith("log.pattern.")) {
-                try {
-                    logPatterns.add( Pattern.compile(props.getProperty(name), Pattern.DOTALL) );
-                } catch (Throwable t) {
-                    log.warning("Log Pattern Fails: " + name);
-                }
-            }
-        }
-        if (logPatterns.size() == 0) {
-            logPatterns.add(Pattern.compile(".* java\\.lang\\.OutOfMemoryError:.*"));
-        }
-        
-        // health check
-        checkEnabled = Boolean.parseBoolean(props.getProperty("check.enabled", "true"));
-        checkIgnore = new HashSet<>();
-        for (String part : props.getProperty("check.ignore", "").split(",")) {
-            part = part.trim();
-            if (part.length() > 0)
-                checkIgnore.add(part);
-        }
-        checkCombineTagsWithOr = Boolean.parseBoolean(props.getProperty("check.combineTagsWithOr", "false"));
-        checkForceInstantExecution = Boolean.parseBoolean(props.getProperty("check.forceInstantExecution", "false"));
-        checkOverrideGlobalTimeoutStr = props.getProperty("check.overrideGlobalTimeoutStr", "");
-        checkTags = props.getProperty("check.tags", "*");
-        
-        if (logEnabled) {
-            PaxAppender appender = event -> printEvent(event);
-            tracker = new LogServiceTracker(ctx.getBundleContext(), LogService.class, null, appender);
+        this.config = new ConfigTemplate(c);
+
+        startChecking = System.currentTimeMillis() + config.waitAfterStart ;
+
+        if (config.logEnabled) {
+            tracker = new LogServiceTracker(ctx.getBundleContext(), LogService.class, null, config);
             tracker.open();
         }
     }
@@ -176,6 +112,20 @@ public class HealthServlet extends HttpServlet {
             tracker.close();
         tracker = null;
         this.ctx = null;
+        ctx.getProperties().put("waitAfterStart", 100);
+    }
+    
+    @Modified
+    public void modified(ComponentContext ctx, Config c) {
+        this.config = new ConfigTemplate(c);
+        if (config.logEnabled && tracker == null) {
+            tracker = new LogServiceTracker(ctx.getBundleContext(), LogService.class, null, config);
+            tracker.open();
+        } else
+        if (!config.logEnabled && tracker != null) {
+            tracker.close();
+            tracker = null;
+        }
     }
 
     public HealthServlet() {}
@@ -189,15 +139,10 @@ public class HealthServlet extends HttpServlet {
             
             // disable wait if all bundles are active
             boolean healthy = true;
-            if (bundlesEnabled) {
-                for (Bundle bundle : ctx.getBundleContext().getBundles()) {
-                    if (bundle.getState() != Bundle.ACTIVE) {
-                        if (bundlesIgnore.contains(bundle.getSymbolicName()))
-                            continue;
-                        healthy = false;
-                        break;
-                    }
-                }
+            if (config.bundlesEnabled) {
+                if (!HealthCheckUtil.checkBundles(ctx, config, null))
+                    healthy = false;
+                
                 if (healthy)
                     startChecking = 0;
             } else
@@ -222,77 +167,23 @@ public class HealthServlet extends HttpServlet {
         long time = System.currentTimeMillis();
         out.println("time: " + time + " " + new Date(time));
         // check if bundles are ok
-        if (bundlesEnabled) {
-            for (Bundle bundle : ctx.getBundleContext().getBundles()) {
-                if (bundle.getState() != Bundle.ACTIVE) {
-                    if (bundlesIgnore.contains(bundle.getSymbolicName()))
-                        continue;
-                    out.println("Bundle: " + bundle.getSymbolicName());
-                    healthy = false;
-                }
-            }
+        if (config.bundlesEnabled) {
+            if (!HealthCheckUtil.checkBundles(ctx, config, out))
+                healthy = false;
         }
         
         // check log
-        if (logEnabled && logFindings.size() > 0) {
+        if (config.logEnabled && tracker.logFindings.size() > 0) {
             healthy = false;
-            for (String finding : logFindings)
+            for (String finding : tracker.logFindings)
                 out.println("Log: " + finding);
-            if (logResetFinding)
-                logFindings.clear();
+            if (config.logResetFinding)
+                tracker.logFindings.clear();
         }
 
         // check felix health check
-        if (checkEnabled) {
-            if (healthCheckExecutor != null) {
-                // https://github.com/apache/felix/tree/archived/healthcheck/webconsoleplugin
-
-                HealthCheckExecutionOptions options = new HealthCheckExecutionOptions();
-                options.setCombineTagsWithOr(checkCombineTagsWithOr);
-                options.setForceInstantExecution(checkForceInstantExecution);
-                if (isNotBlank(checkOverrideGlobalTimeoutStr))
-                    try {
-                        options.setOverrideGlobalTimeout(Integer.valueOf(checkOverrideGlobalTimeoutStr));
-                    } catch (NumberFormatException nfe) {
-                        // override not set in UI
-                    }
-                HealthCheckSelector selector = isNotBlank(checkTags) ? HealthCheckSelector.tags(checkTags.split(",")) : HealthCheckSelector.empty();
-                Collection<HealthCheckExecutionResult> results = healthCheckExecutor.execute(selector, options);
-                for (HealthCheckExecutionResult result : results) {
-                    try {
-                        String name = result.getHealthCheckMetadata().getName();
-                        if (checkIgnore.contains(name)) continue;
-                        Result status = result.getHealthCheckResult();
-                        for (Entry entry : status) {
-                            out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
-                            Status s = entry.getStatus();
-                            if (s != Status.OK && s != Status.WARN )
-                                healthy = false;
-                        }
-                    } catch (Throwable t) {
-                        log.throwing("","",t);
-                    }
-                }
-            } else {
-                // direct ... legacy without HealthCheckExecutor service
-                for (HealthCheck check : Osgi.getServices(HealthCheck.class, null)) {
-                    try {
-                        String name = check.toString();
-                        int pos = name.indexOf('@');
-                        if (pos > 0) name = name.substring(0,pos);
-                        if (checkIgnore.contains(name)) continue;
-                        Result status = check.execute();
-                        for (Entry entry : status) {
-                            out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
-                            Status s = entry.getStatus();
-                            if (s != Status.OK && s != Status.WARN )
-                                healthy = false;
-                        }
-                    } catch (Throwable t) {
-                        log.throwing("","",t);
-                    }
-                }
-            }
+        if (config.checkEnabled) {
+            HealthCheckUtil.checkServices(healthCheckExecutor, config, out, log, Status.CRITICAL, Status.HEALTH_CHECK_ERROR);
         }
         
         if (!healthy) {
@@ -316,87 +207,5 @@ public class HealthServlet extends HttpServlet {
         }
     }
 
-    private boolean isNotBlank(String str) {
-        return str != null && str.length() > 0;
-    }
-
-    private static final class LogServiceTracker extends ServiceTracker<LogService, LogService> {
-
-        private static final String SSHD_LOGGER = "org.apache.sshd";
-
-        private final PaxAppender appender;
-
-        private String sshdLoggerLevel;
-
-        private LogServiceTracker(
-                BundleContext context,
-                Class<LogService> clazz,
-                ServiceTrackerCustomizer<LogService, LogService> customizer,
-                PaxAppender appender) {
-            super(context, clazz, customizer);
-            this.appender = appender;
-        }
-
-        @Override
-        public LogService addingService(ServiceReference<LogService> reference) {
-            LogService service = super.addingService(reference);
-            sshdLoggerLevel = service.getLevel(SSHD_LOGGER).get(SSHD_LOGGER);
-            service.setLevel(SSHD_LOGGER, "ERROR");
-            service.addAppender(appender);
-            return service;
-        }
-
-        @Override
-        public void removedService(ServiceReference<LogService> reference, LogService service) {
-            if (sshdLoggerLevel != null) {
-                service.setLevel(SSHD_LOGGER, sshdLoggerLevel);
-            }
-            service.removeAppender(appender);
-            // stopTail();
-        }
-    }
-
-    private void printEvent(PaxLoggingEvent event) {
-        // scan log
-        try {
-            if (event != null) {
-                int sl = event.getLevel().getSyslogEquivalent();
-                if (sl > logLevel) return;
-                String msg = event.getMessage();
-                for (Pattern pattern : logPatterns) {
-                    if (pattern.matcher(msg).matches())
-                        logFindings.add(pattern.pattern());
-                }
-            }
-        } catch (NoClassDefFoundError e) {
-            // KARAF-3350: Ignore NoClassDefFoundError exceptions
-            // Those exceptions may happen if the underlying pax-logging service
-            // bundle has been refreshed somehow.
-        }
-    }
-
-    protected static int getMinLevel(String levelSt) {
-        int minLevel = Integer.MAX_VALUE;
-        if (levelSt != null) {
-            switch (levelSt.toLowerCase()) {
-                case "debug":
-                    minLevel = DEBUG_INT;
-                    break;
-                case "info":
-                    minLevel = INFO_INT;
-                    break;
-                case "warn":
-                    minLevel = WARN_INT;
-                    break;
-                case "error":
-                    minLevel = ERROR_INT;
-                    break;
-                case "all":
-                    minLevel = ALL_INT;
-                    break;
-            }
-        }
-        return minLevel;
-    }
 
 }

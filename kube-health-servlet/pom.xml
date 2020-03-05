@@ -48,6 +48,15 @@
 	</build>
 
 	<dependencies>
+	
+<!-- https://mvnrepository.com/artifact/org.osgi/org.osgi.service.metatype.annotations -->
+<dependency>
+    <groupId>org.osgi</groupId>
+    <artifactId>org.osgi.service.metatype.annotations</artifactId>
+    <version>1.4.0</version>
+    <scope>provided</scope>
+</dependency>
+	
 		<dependency>
 			<groupId>org.osgi</groupId>
 			<artifactId>org.osgi.core</artifactId>
