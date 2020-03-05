@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,6 +37,10 @@ import org.apache.felix.hc.api.HealthCheck;
 import org.apache.felix.hc.api.Result;
 import org.apache.felix.hc.api.Result.Status;
 import org.apache.felix.hc.api.ResultLog.Entry;
+import org.apache.felix.hc.api.execution.HealthCheckExecutionOptions;
+import org.apache.felix.hc.api.execution.HealthCheckExecutionResult;
+import org.apache.felix.hc.api.execution.HealthCheckExecutor;
+import org.apache.felix.hc.api.execution.HealthCheckSelector;
 import org.apache.karaf.log.core.LogService;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
@@ -46,6 +51,8 @@ import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
@@ -77,6 +84,18 @@ public class ReadyServlet extends HttpServlet {
     private HashSet<String> checkIgnore;
     private static Logger log = Logger.getLogger(ReadyServlet.class.getCanonicalName());
 
+    private HealthCheckExecutor healthCheckExecutor;
+    private boolean checkCombineTagsWithOr;
+    private boolean checkForceInstantExecution;
+    private String checkOverrideGlobalTimeoutStr;
+    private String checkTags;
+
+    @Reference(cardinality = ReferenceCardinality.OPTIONAL)
+    public void setHealthCheckExecutor(HealthCheckExecutor healthCheckExecutor) {
+        log.info("Found healthCheckExecutor");
+        this.healthCheckExecutor = healthCheckExecutor;
+    }
+    
     @Activate
     public void activate(ComponentContext ctx) {
         this.ctx = ctx;
@@ -137,6 +156,10 @@ public class ReadyServlet extends HttpServlet {
             if (part.length() > 0)
                 checkIgnore.add(part);
         }
+        checkCombineTagsWithOr = Boolean.parseBoolean(props.getProperty("check.combineTagsWithOr", "false"));
+        checkForceInstantExecution = Boolean.parseBoolean(props.getProperty("check.forceInstantExecution", "false"));
+        checkOverrideGlobalTimeoutStr = props.getProperty("check.overrideGlobalTimeoutStr", "");
+        checkTags = props.getProperty("check.tags", "*");
 
         if (logEnabled) {
             PaxAppender appender = event -> printEvent(event);
@@ -188,22 +211,53 @@ public class ReadyServlet extends HttpServlet {
         
         // check felix health check
         if (checkEnabled) {
-            for (HealthCheck check : Osgi.getServices(HealthCheck.class, null)) {
-                try {
-                    String name = check.toString();
-                    int pos = name.indexOf('@');
-                    if (pos > 0) name = name.substring(0,pos);
-                    if (checkIgnore.contains(name)) continue;
-                    
-                    Result status = check.execute();
-                    for (Entry entry : status) {
-                        out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
-                        Status s = entry.getStatus();
-                        if (s != Status.OK)
-                            healthy = false;
+            if (healthCheckExecutor != null) {
+                // https://github.com/apache/felix/tree/archived/healthcheck/webconsoleplugin
+
+                HealthCheckExecutionOptions options = new HealthCheckExecutionOptions();
+                options.setCombineTagsWithOr(checkCombineTagsWithOr);
+                options.setForceInstantExecution(checkForceInstantExecution);
+                if (isNotBlank(checkOverrideGlobalTimeoutStr))
+                    try {
+                        options.setOverrideGlobalTimeout(Integer.valueOf(checkOverrideGlobalTimeoutStr));
+                    } catch (NumberFormatException nfe) {
+                        // override not set in UI
                     }
-                } catch (Throwable t) {
-                    log.throwing("","",t);
+                HealthCheckSelector selector = isNotBlank(checkTags) ? HealthCheckSelector.tags(checkTags.split(",")) : HealthCheckSelector.empty();
+                Collection<HealthCheckExecutionResult> results = healthCheckExecutor.execute(selector, options);
+                for (HealthCheckExecutionResult result : results) {
+                    try {
+                        String name = result.getHealthCheckMetadata().getName();
+                        if (checkIgnore.contains(name)) continue;
+                        Result status = result.getHealthCheckResult();
+                        for (Entry entry : status) {
+                            out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
+                            Status s = entry.getStatus();
+                            if (s != Status.OK)
+                                healthy = false;
+                        }
+                    } catch (Throwable t) {
+                        log.throwing("","",t);
+                    }
+                }
+            } else {
+                // direct ... legacy without HealthCheckExecutor service
+                for (HealthCheck check : Osgi.getServices(HealthCheck.class, null)) {
+                    try {
+                        String name = check.toString();
+                        int pos = name.indexOf('@');
+                        if (pos > 0) name = name.substring(0,pos);
+                        if (checkIgnore.contains(name)) continue;
+                        Result status = check.execute();
+                        for (Entry entry : status) {
+                            out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
+                            Status s = entry.getStatus();
+                            if (s != Status.OK)
+                                healthy = false;
+                        }
+                    } catch (Throwable t) {
+                        log.throwing("","",t);
+                    }
                 }
             }
         }
@@ -227,6 +281,10 @@ public class ReadyServlet extends HttpServlet {
         if (!healthy) {
             log.severe("Ready check failed:\n" + content);
         }
+    }
+
+    private boolean isNotBlank(String str) {
+        return str != null && str.length() > 0;
     }
 
     private static final class LogServiceTracker extends ServiceTracker<LogService, LogService> {
