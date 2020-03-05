@@ -45,8 +45,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
         property = "alias=/system/health/*",
         name = "HealthServlet",
         servicefactory = true,
-        configurationPolicy = ConfigurationPolicy.OPTIONAL,
-        configurationPid = "de.mhus.osgi.healthservlet.HealthServlet"
+        configurationPolicy = ConfigurationPolicy.OPTIONAL
         )
 @Designate(ocd = HealthServlet.Config.class)
 public class HealthServlet extends HttpServlet {
@@ -60,7 +59,7 @@ public class HealthServlet extends HttpServlet {
     private HealthCheckExecutor healthCheckExecutor;
     private ConfigTemplate config;
 
-    @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes",id = "de.mhus.osgi.healthservlet.HealthServlet")
+    @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes")
     public @interface Config {
         @AttributeDefinition(name = "Wait After Start", description = "ms before activation")
         long waitAfterStart() default 60000;
