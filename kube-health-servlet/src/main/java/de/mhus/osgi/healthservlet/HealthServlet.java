@@ -57,32 +57,40 @@ public class HealthServlet extends HttpServlet {
     private static Logger log = Logger.getLogger(HealthServlet.class.getCanonicalName());
 
     private HealthCheckExecutor healthCheckExecutor;
-    private ConfigTemplate config;
+    private ConfigValues config;
 
     @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes")
     public @interface Config {
-        @AttributeDefinition(name = "Wait After Start", description = "ms before activation")
+        @AttributeDefinition(name = "Wait after start", description = "ms before activation")
         long waitAfterStart() default 60000;
-        @AttributeDefinition(name = "Bundles Ignore", description = "List of Bundles to ignore (separate by comma)")
+        @AttributeDefinition(name = "Bundles ignore", description = "List of Bundles to ignore (separate by comma)")
         String[] bundlesIgnore() default {
             "org.apache.karaf.features.extension",
             "org.apache.aries.blueprint.core.compatibility",
-            "org.apache.karaf.shell.console,org.jline.terminal-jansi"
+            "org.apache.karaf.shell.console",
+            "org.jline.terminal-jansi"
         };
-        @AttributeDefinition(name = "Enable Bundle Check", description = "Validate if all bundles are active")
+        @AttributeDefinition(name = "Enable bundle check", description = "Validate if all bundles are active")
         boolean bundlesEnabled() default true;
-        @AttributeDefinition(name = "Enable Log Check", description = "Introspect the own logs and alert for patterns")
+        @AttributeDefinition(name = "Enable log check", description = "Introspect the own logs and alert for patterns")
         boolean logEnabled() default true;
-        @AttributeDefinition(name = "Log Level To Check", description = "5=Debug")
-        int logLevel() default 5;
-        @AttributeDefinition(name = "Log Patterns", description = "List of patterns to watch for")
-        String[] logPatterns() default {};
+        @AttributeDefinition(name = "Log level to check", description = "Minimum log level to scan")
+        HealthCheckUtil.LOG_LEVEL logLevel() default HealthCheckUtil.LOG_LEVEL.DEBUG;
+        @AttributeDefinition(name = "Log patterns", description = "List of patterns to watch for")
+        String[] logPatterns() default {".* java\\.lang\\.OutOfMemoryError:.*"};
+        @AttributeDefinition(name = "Reset Findings", description = "Reset findings after delivery")
         boolean logResetFinding() default false;
+        @AttributeDefinition(name = "Enable OSGi Health Check", description = "Enable checking of OSGi Health Check services")
         boolean checkEnabled() default true;
+        @AttributeDefinition(name = "Ignore OSGi Checks", description = "List of OSGi Health Check services to ignore by name")
         String[] checkIgnore() default {};
+        @AttributeDefinition(name = "Combine tags with or", description = "Combine tags with logical 'OR' instead of the default 'AND'")
         boolean checkCombineTagsWithOr() default false;
+        @AttributeDefinition(name = "Force Execution", description = "Force instant execution (no cache, async checks are executed)")
         boolean checkForceInstantExecution() default false;
+        @AttributeDefinition(name = "Override global timeout", description = "")
         String checkOverrideGlobalTimeoutStr() default "";
+        @AttributeDefinition(name = "Health Check tags (comma-separated)", description = "Enter tags to selected health checks to be executed. Leave empty to execute default checks or use '*' to execute all checks. Prefix a tag with a minus sign (-) to omit checks having that tag (can be also used in combination with '*', e.g. '*,-excludedtag').")
         String checkTags() default "*";
     }
     
@@ -95,7 +103,7 @@ public class HealthServlet extends HttpServlet {
     @Activate
     public void activate(ComponentContext ctx, Config c) {
         this.ctx = ctx;
-        this.config = new ConfigTemplate(c);
+        this.config = new ConfigValues(c);
 
         startChecking = System.currentTimeMillis() + config.waitAfterStart ;
 
@@ -116,7 +124,7 @@ public class HealthServlet extends HttpServlet {
     
     @Modified
     public void modified(ComponentContext ctx, Config c) {
-        this.config = new ConfigTemplate(c);
+        this.config = new ConfigValues(c);
         if (config.logEnabled && tracker == null) {
             tracker = new LogServiceTracker(ctx.getBundleContext(), LogService.class, null, config);
             tracker.open();
@@ -182,7 +190,7 @@ public class HealthServlet extends HttpServlet {
 
         // check felix health check
         if (config.checkEnabled) {
-            HealthCheckUtil.checkServices(healthCheckExecutor, config, out, log, Status.CRITICAL, Status.HEALTH_CHECK_ERROR);
+            HealthCheckUtil.checkOSGiHealthServices(healthCheckExecutor, config, out, log, Status.CRITICAL, Status.HEALTH_CHECK_ERROR);
         }
         
         if (!healthy) {

@@ -16,7 +16,50 @@ import org.osgi.service.component.ComponentContext;
 
 public class HealthCheckUtil {
 
-    public static boolean checkBundles(ComponentContext ctx, ConfigTemplate config, PrintWriter out) {
+    public static final int ERROR_INT = 3;
+    public static final int WARN_INT  = 4;
+    public static final int INFO_INT  = 6;
+    public static final int DEBUG_INT = 7;
+    public static final int ALL_INT   = 100;
+    
+    public enum LOG_LEVEL { 
+        ERROR {
+            @Override
+            public int toInt() {
+                return ERROR_INT;
+                }
+            }, 
+        WARN {
+            @Override
+            public int toInt() {
+                return WARN_INT;
+                }
+            }, 
+        INFO {
+            @Override
+            public int toInt() {
+                return INFO_INT;
+                }
+            }, 
+        DEBUG {
+            @Override
+            public int toInt() {
+                return DEBUG_INT;
+                }
+            }, 
+        ALL {
+            @Override
+            public int toInt() {
+                return ALL_INT;
+                }
+            };
+
+            public int toInt() {
+                return 0;
+            }
+    }
+
+    public static boolean checkBundles(ComponentContext ctx, ConfigValues config, PrintWriter out) {
         boolean healthy = true;
         for (Bundle bundle : ctx.getBundleContext().getBundles()) {
             if (bundle.getState() != Bundle.ACTIVE) {
@@ -32,7 +75,7 @@ public class HealthCheckUtil {
         return healthy;
     }
 
-    public static boolean checkServices(HealthCheckExecutor healthCheckExecutor, ConfigTemplate config, PrintWriter out, Logger log, Status ... alertStatus ) {
+    public static boolean checkOSGiHealthServices(HealthCheckExecutor healthCheckExecutor, ConfigValues config, PrintWriter out, Logger log, Status ... alertStatus ) {
         if (healthCheckExecutor == null) {
             out.println("Error: healthCheckExecutor not present");
             return false;
@@ -56,7 +99,7 @@ public class HealthCheckUtil {
                 if (config.checkIgnore.contains(name)) continue;
                 Result status = result.getHealthCheckResult();
                 for (Entry entry : status) {
-                    out.println(name + ": " + entry.getLogLevel() + " " + entry.getMessage());
+                    out.println("OSGiHealth: " + name + "=" + entry.getLogLevel() + "," + entry.getMessage());
                     Status s = entry.getStatus();
                     for (Status alert : alertStatus)
                         if (s == alert)

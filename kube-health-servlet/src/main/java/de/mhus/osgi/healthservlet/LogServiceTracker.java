@@ -21,7 +21,7 @@ public class LogServiceTracker extends ServiceTracker<LogService, LogService> {
 
     private String sshdLoggerLevel;
 
-    private ConfigTemplate config;
+    private ConfigValues config;
 
     Set<String>  logFindings = Collections.synchronizedSet(new HashSet<>());
 
@@ -29,7 +29,7 @@ public class LogServiceTracker extends ServiceTracker<LogService, LogService> {
             BundleContext context,
             Class<LogService> clazz,
             ServiceTrackerCustomizer<LogService, LogService> customizer,
-            ConfigTemplate config
+            ConfigValues config
             ) {
         super(context, clazz, customizer);
         this.config = config;

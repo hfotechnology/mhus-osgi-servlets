@@ -5,13 +5,7 @@ import java.util.regex.Pattern;
 
 import de.mhus.osgi.healthservlet.HealthServlet.Config;
 
-public class ConfigTemplate {
-
-    public static final int ERROR_INT = 3;
-    public static final int WARN_INT = 4;
-    public static final int INFO_INT = 6;
-    public static final int DEBUG_INT = 7;
-    public static final int ALL_INT = 100;
+public class ConfigValues {
 
     // public Properties props;
     
@@ -29,14 +23,14 @@ public class ConfigTemplate {
     public String checkOverrideGlobalTimeoutStr;
     public String checkTags;
     
-    public ConfigTemplate(Config c) {
+    public ConfigValues(Config c) {
         waitAfterStart = c.waitAfterStart();
         bundlesIgnore = new HashSet<>();
         for (String e : c.bundlesIgnore())
                 bundlesIgnore.add(e);
         bundlesEnabled = c.bundlesEnabled();
         logEnabled = c.logEnabled();
-        logLevel = c.logLevel();
+        logLevel = c.logLevel().toInt();
         logPatterns = new HashSet<Pattern>();
         for (String e : c.logPatterns()) {
           try {
@@ -54,6 +48,32 @@ public class ConfigTemplate {
         checkOverrideGlobalTimeoutStr = c.checkOverrideGlobalTimeoutStr();
         checkTags = c.checkTags();
     }   
+
+    public ConfigValues(de.mhus.osgi.healthservlet.ReadyServlet.Config c) {
+        bundlesIgnore = new HashSet<>();
+        for (String e : c.bundlesIgnore())
+                bundlesIgnore.add(e);
+        bundlesEnabled = c.bundlesEnabled();
+        logEnabled = c.logEnabled();
+        logLevel = c.logLevel().toInt();
+        logPatterns = new HashSet<Pattern>();
+        for (String e : c.logPatterns()) {
+          try {
+              logPatterns.add( Pattern.compile(e, Pattern.DOTALL) );
+          } catch (Throwable t) {
+          }
+        }
+        logResetFinding = c.logResetFinding();
+        checkEnabled = c.checkEnabled();
+        checkIgnore = new HashSet<String>();
+        for (String e : c.checkIgnore())
+            checkIgnore.add(e);
+        checkCombineTagsWithOr = c.checkCombineTagsWithOr();
+        checkForceInstantExecution = c.checkForceInstantExecution();
+        checkOverrideGlobalTimeoutStr = c.checkOverrideGlobalTimeoutStr();
+        checkTags = c.checkTags();
+    }
+
     
 //
 //    public ConfigTemplate(ComponentContext ctx, Logger log) {
@@ -116,29 +136,29 @@ public class ConfigTemplate {
 //        
 //        
 //    }
-    
-    public static int getMinLevel(String levelSt) {
-        int minLevel = Integer.MAX_VALUE;
-        if (levelSt != null) {
-            switch (levelSt.toLowerCase()) {
-                case "debug":
-                    minLevel = DEBUG_INT;
-                    break;
-                case "info":
-                    minLevel = INFO_INT;
-                    break;
-                case "warn":
-                    minLevel = WARN_INT;
-                    break;
-                case "error":
-                    minLevel = ERROR_INT;
-                    break;
-                case "all":
-                    minLevel = ALL_INT;
-                    break;
-            }
-        }
-        return minLevel;
-    }
+//    
+//    public static int getMinLevel(String levelSt) {
+//        int minLevel = Integer.MAX_VALUE;
+//        if (levelSt != null) {
+//            switch (levelSt.toLowerCase()) {
+//                case "debug":
+//                    minLevel = DEBUG_INT;
+//                    break;
+//                case "info":
+//                    minLevel = INFO_INT;
+//                    break;
+//                case "warn":
+//                    minLevel = WARN_INT;
+//                    break;
+//                case "error":
+//                    minLevel = ERROR_INT;
+//                    break;
+//                case "all":
+//                    minLevel = ALL_INT;
+//                    break;
+//            }
+//        }
+//        return minLevel;
+//    }
 
 }
