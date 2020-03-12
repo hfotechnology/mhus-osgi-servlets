@@ -19,12 +19,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>mhu-osgi-jwsbridge</artifactId>
-	<description>jwsbridge OSGi bundle project.</description>
+	<artifactId>web-console</artifactId>
 	<packaging>bundle</packaging>
+	<description>commands OSGi blueprint bundle project.</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>6.4.0-SNAPSHOT</version>
+		<version>7.0.0-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
@@ -38,16 +38,8 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Export-Package>
-							de.mhus.osgi.jwsbridge*;version=${project.version}
-						</Export-Package>
-						<Import-Package>
-						    javax.xml.ws;version=2.2.0,
-							*
-						</Import-Package>
-						<Private-Package>
-							de.mhus.osgi.jwsbridge.impl
-						</Private-Package>
+						<Export-Package>de.mhus.osgi.webconsole*;version=${project.version}</Export-Package>
+						<Import-Package>*</Import-Package>
 						<Service-Component>*</Service-Component>
 					</instructions>
 				</configuration>
@@ -65,8 +57,36 @@
 			<artifactId>org.osgi.compendium</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
+			<groupId>org.apache.karaf.shell</groupId>
+			<artifactId>org.apache.karaf.shell.console</artifactId>
+		</dependency>
+		 <dependency>
+		     <groupId>org.apache.felix</groupId>
+		    <artifactId>org.apache.felix.webconsole</artifactId>
+		 </dependency>
+		 <dependency>
+	        <artifactId>javax.servlet</artifactId>
+	        <groupId>org.apache.felix</groupId>
+		 </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-pool</groupId>
+			<artifactId>commons-pool</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.mhus.lib</groupId>
+			<artifactId>lib-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>de.mhus.lib</groupId>
+			<artifactId>lib-persistence</artifactId>
 		</dependency>
 	</dependencies>
 </project>

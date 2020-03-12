@@ -19,12 +19,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>mhu-osgi-dump-servlet</artifactId>
+	<artifactId>rewrite-servlet</artifactId>
 	<packaging>bundle</packaging>
-	<description>Root servlet to delegate requests</description>
+	<description>Rewrite content servlet</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>6.4.0-SNAPSHOT</version>
+		<version>7.0.0-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
@@ -38,7 +38,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Private-Package>de.mhus.osgi.dumpservlet*</Private-Package>
+						<Export-Package>de.mhus.osgi.rewriteservlet*;version=${project.version}</Export-Package>
 						<Import-Package>*</Import-Package>
 						<Service-Component>*</Service-Component>
 					</instructions>
@@ -61,6 +61,10 @@
 			<artifactId>org.apache.karaf.shell.console</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
 		</dependency>
@@ -68,9 +72,6 @@
 			<groupId>commons-pool</groupId>
 			<artifactId>commons-pool</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-		</dependency>
+
 	</dependencies>
 </project>

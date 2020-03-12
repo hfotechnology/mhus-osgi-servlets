@@ -21,12 +21,12 @@
 	<modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>de.mhus.lib</groupId>
-        <version>6.5.0-SNAPSHOT</version>
+        <version>7.0.0-SNAPSHOT</version>
         <artifactId>mhus-karaf</artifactId>
     </parent>
 	<groupId>de.mhus.osgi</groupId>
 	<artifactId>mhus-osgi-servlets</artifactId>
-	<version>6.4.0-SNAPSHOT</version>
+	<version>7.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>MHUS OSGi Servlet Tools</name>
 	<description>A set of servlets to improve OSGi frameworks and karaf</description>
@@ -55,14 +55,14 @@
 	</developers>
 
 	<modules>
-		<module>mhu-osgi-jwsbridge</module>
-		<module>mhu-karaf-jwsbridge</module>
-		<module>mhu-osgi-jwsclient</module>
-		<module>mhu-osgi-web-console</module>
-		<module>mhu-osgi-root-servlet</module>
-        <module>mhu-osgi-dump-servlet</module>
-		<module>mhu-osgi-rewrite-servlet</module>
-        <module>kube-health-servlet</module>
+		<module>jwsbridge-servlet</module>
+		<module>jwsbridge-karaf</module>
+		<module>jwsbridge-client</module>
+		<module>web-console</module>
+		<module>root-servlet</module>
+        <module>dump-servlet</module>
+		<module>rewrite-servlet</module>
+        <module>health-servlet</module>
 	</modules>
 
 </project>

@@ -19,12 +19,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>kube-health-servlet</artifactId>
+	<artifactId>jwsbridge-karaf</artifactId>
 	<packaging>bundle</packaging>
-	<description>Servlet to monitor health state of karaf to be used bu kubernetes monitoring</description>
+	<description>jwskarafbridge OSGi blueprint bundle project.</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>6.4.0-SNAPSHOT</version>
+		<version>7.0.0-SNAPSHOT</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
@@ -38,9 +38,15 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Private-Package>de.mhus.osgi.healthservlet*</Private-Package>
-						<Import-Package>*</Import-Package>
-						<Service-Component>*</Service-Component>
+						<Export-Package>
+							de.mhus.osgi.jwskarafbridge*;version=${project.version}
+						</Export-Package>
+						<Import-Package>
+							*
+						</Import-Package>
+						<Private-Package>
+							de.mhus.osgi.jwskarafbridge.impl
+						</Private-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -48,57 +54,31 @@
 	</build>
 
 	<dependencies>
-	
-<!-- https://mvnrepository.com/artifact/org.osgi/org.osgi.service.metatype.annotations -->
-<dependency>
-    <groupId>org.osgi</groupId>
-    <artifactId>org.osgi.service.metatype.annotations</artifactId>
-    <version>1.4.0</version>
-    <scope>provided</scope>
-</dependency>
-	
 		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.compendium</artifactId>
+			<groupId>de.mhus.osgi</groupId>
+			<artifactId>jwsbridge-servlet</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.karaf.shell</groupId>
 			<artifactId>org.apache.karaf.shell.console</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-dbcp</groupId>
-			<artifactId>commons-dbcp</artifactId>
+			<groupId>de.mhus.lib</groupId>
+			<artifactId>lib-core</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>de.mhus.osgi</groupId>
+            <artifactId>osgi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>biz.aQute.bnd</groupId>
+            <artifactId>bndlib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-rt-frontend-jaxws</artifactId>
+        </dependency>
 		
-        <dependency>
-            <groupId>org.ops4j.pax.url</groupId>
-            <artifactId>pax-url-aether</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
-            <artifactId>pax-logging-log4j2</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.karaf.log</groupId>
-            <artifactId>org.apache.karaf.log.core</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.apache.felix</groupId>
-            <artifactId>org.apache.felix.healthcheck.api</artifactId>
-        </dependency>
-        
 	</dependencies>
 </project>
