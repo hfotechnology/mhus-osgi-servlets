@@ -14,14 +14,13 @@
 package de.mhus.osgi.dumpservlet;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.Servlet;
@@ -34,34 +33,79 @@ import javax.servlet.http.HttpServletResponse;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 @Component(
         service = Servlet.class,
         property = "alias=/dump/*",
         name = "DumpServlet",
-        servicefactory = true)
+        servicefactory = true,
+        configurationPolicy = ConfigurationPolicy.OPTIONAL
+        )
+@Designate(ocd = DumpServlet.Config.class)
 public class DumpServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private Properties props;
+    private Map<String,Definition> pathes = new HashMap<>();
     private static Logger log = Logger.getLogger(DumpServlet.class.getCanonicalName());
 
+    @ObjectClassDefinition(name = "Dump Servlet", description = "Dump requests into files")
+    public @interface Config {
+        @AttributeDefinition(name = "Path", description = "insert path='file name' entries, e.g. test=data/log/test.log")
+        String[] pathes() default {};
+        @AttributeDefinition(name = "Status", description = "Status return code for entries, e.g. test=404")
+        String[] status() default {};
+        @AttributeDefinition(name = "Content Type", description = "Content Type for entries, e.g. test=application/json")
+        String[] contentType() default {};
+        @AttributeDefinition(name = "Payload", description = "Return payload for entries, e.g. test={\"key\":\"value\"}")
+        String[] payload() default {};
+    }
+    
+    public static class Definition {
+        String path;
+        String file;
+        int status = 200;
+        String contentType = "application/json";
+        String payload = null;
+    }
+
     @Activate
-    public void activate(ComponentContext ctx) {
-        props = new Properties();
-        File f = new File("etc/dumpservlet.properties");
-        if (f.exists()) {
-            log.info("Load config file " + f);
-            try {
-                FileInputStream is = new FileInputStream(f);
-                props.load(is);
-                is.close();
-            } catch (IOException e) {
-                log.warning(e.toString());
+    public void activate(ComponentContext ctx, Config c) {
+        configure(c);
+    }
+
+    @Modified
+    public void modified(ComponentContext ctx, Config c) {
+        configure(c);
+    }
+
+    private void configure(Config c) {
+        pathes.clear();
+        for (String p : c.pathes()) {
+            int pos = p.indexOf('=');
+            if (pos > 0) {
+                Definition def = new Definition();
+                def.path = p.substring(0,pos);
+                def.file = p.substring(pos+1);
+                
+                String prefix = def.path + "=";
+                for (String x : c.status())
+                    if (x.startsWith(prefix))
+                        def.status = Integer.parseInt(x.substring(prefix.length()));
+                for (String x : c.contentType())
+                    if (x.startsWith(prefix))
+                        def.contentType = x.substring(prefix.length());
+                for (String x : c.payload())
+                    if (x.startsWith(prefix))
+                        def.payload = x.substring(prefix.length());
+
+                pathes.put(def.path, def);
             }
-        } else {
-            log.warning("Config file not found");
         }
     }
 
@@ -74,19 +118,25 @@ public class DumpServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         String path = req.getPathInfo();
-        
-        boolean done = false;
-        for (Object keyO : props.keySet()) {
-            String key = keyO.toString();
+
+        Definition def = null;
+        for (String key : pathes.keySet()) {
             if (key.startsWith("_")) continue;
             if (path.matches(key)) {
-                writeTo(req,props.getProperty(key));
-                done = true;
+                def = pathes.get(key);
+                writeTo(req,def.file);
+                break;
             }
         }
-        if (!done)
+        if (def == null) {
             log.fine("Request not logged: " + path);
-        res.setStatus(200);
+            res.setStatus(404);
+        } else {
+            res.setStatus(def.status);
+            res.setContentType(def.contentType);
+            if (def.payload != null)
+                res.getWriter().write(def.payload);
+        }
     }
 
     private synchronized void writeTo(HttpServletRequest req, String file) {
