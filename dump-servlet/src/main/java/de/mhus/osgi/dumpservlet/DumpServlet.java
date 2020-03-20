@@ -43,7 +43,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Component(
         service = Servlet.class,
         property = "alias=/dump/*",
-        name = "DumpServlet",
         servicefactory = true,
         configurationPolicy = ConfigurationPolicy.OPTIONAL
         )

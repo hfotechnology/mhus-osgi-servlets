@@ -39,7 +39,6 @@ import org.osgi.service.component.annotations.Component;
 @Component(
         service = Servlet.class,
         property = "alias=/rewrite/*",
-        name = "RewriteServlet",
         servicefactory = true)
 public class RewriteServlet extends HttpServlet {
 

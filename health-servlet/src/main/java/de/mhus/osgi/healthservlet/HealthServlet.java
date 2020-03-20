@@ -43,7 +43,6 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 @Component(
         service = Servlet.class,
         property = "alias=/system/health/*",
-        name = "HealthServlet",
         servicefactory = true,
         configurationPolicy = ConfigurationPolicy.OPTIONAL
         )

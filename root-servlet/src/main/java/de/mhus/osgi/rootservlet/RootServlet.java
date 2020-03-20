@@ -13,11 +13,12 @@
  */
 package de.mhus.osgi.rootservlet;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
@@ -26,10 +27,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.ComponentContext;
-
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.metatype.annotations.AttributeDefinition;
+import org.osgi.service.metatype.annotations.Designate;
+import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
 /*
 
@@ -42,30 +47,49 @@ rule0.redirect=
 @Component(
         service = Servlet.class,
         property = "alias=/*",
-        name = "RootServlet",
-        servicefactory = true)
+        servicefactory = true,
+        configurationPolicy = ConfigurationPolicy.OPTIONAL
+        )
+@Designate(ocd = RootServlet.Config.class)
 public class RootServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private Properties props;
     private static Logger log = Logger.getLogger(RootServlet.class.getCanonicalName());
+    private HashMap<Pattern, String> redirects = new HashMap<>();
+    private String errorMsg;
+    private int errorNr;
 
+    @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes")
+    public @interface Config {
+        @AttributeDefinition(name = "Redirect", description = "Redirect a path to another one, key is a regex, the value the target path, e.g. .*=/ui")
+        String[] redirect() default {};
+        String errorMsg() default "";
+        int errorNr() default 404;
+    }
+    
     @Activate
-    public void activate(ComponentContext ctx) {
-        props = new Properties();
-        File f = new File("etc/rootservlet.properties");
-        if (f.exists()) {
-            log.info("Load config file " + f);
-            try {
-                FileInputStream is = new FileInputStream(f);
-                props.load(is);
-                is.close();
-            } catch (IOException e) {
-                log.warning(e.toString());
+    public void activate(ComponentContext ctx, Config c) {
+        loadConfig(c);
+    }
+
+    @Modified
+    public void modified(ComponentContext ctx, Config c) {
+        loadConfig(c);
+    }
+
+    private void loadConfig(Config c) {
+        redirects.clear();
+        for (String entry : c.redirect()) {
+            int pos = entry.indexOf('=');
+            if (pos > 0) {
+                String regex = entry.substring(0,pos);
+                String target = entry.substring(pos+1);
+                Pattern pattern = Pattern.compile(regex);
+                redirects.put(pattern, target);
             }
-        } else {
-            log.warning("Config file not found");
         }
+        errorMsg = c.errorMsg();
+        errorNr = c.errorNr();
     }
 
     @Deactivate
@@ -73,34 +97,26 @@ public class RootServlet extends HttpServlet {
 
     public RootServlet() {}
 
-    @SuppressWarnings("deprecation")
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse res)
             throws ServletException, IOException {
         String path = req.getPathInfo();
 
-        String action = "default";
-
         if (path == null) path = "";
 
-        for (int cnt = 0; props.getProperty("rule" + cnt) != null; cnt++)
-            if (path.matches(props.getProperty("rule" + cnt))) {
-                action = "rule" + cnt;
-                break;
+        for (Entry<Pattern, String> entry : redirects.entrySet()) {
+            Matcher matcher = entry.getKey().matcher(path);
+            if (matcher.matches()) {
+                String target = matcher.replaceFirst(entry.getValue());
+                res.sendRedirect(target);
+                return;
             }
-
-        log.fine(path + "=" + action);
-
-        String redirect = props.getProperty(action + ".redirect");
-        if (redirect != null) {
-            res.sendRedirect(redirect);
-            return;
         }
+        log.fine("No match for path: " + path);
 
-        String msg = props.getProperty(action + ".errormsg");
-        int erno = Integer.valueOf(props.getProperty(action + ".error", "404"));
-
-        if (msg != null) res.setStatus(erno, msg);
-        else res.setStatus(erno);
+        if (errorMsg.length() > 0)
+            res.sendError(errorNr, errorMsg);
+        else
+            res.sendError(errorNr);
     }
 }

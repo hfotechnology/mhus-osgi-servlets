@@ -29,9 +29,56 @@ readinessProbe:
 The two servlets are using nearly the same mechanisms to check status of the engine. You can configure it with the default osgi configuration in the configuration file or web console.
 
 Configuration files:
+
 ```
 etc/de.mhus.osgi.healthservlet.HealthServlet.cfg
+
+bundlesEnabled = B"true"
+bundlesIgnore = [ \
+  "org.apache.karaf.features.extension", \
+  "org.apache.aries.blueprint.core.compatibility", \
+  "org.apache.karaf.shell.console", \
+  "org.jline.terminal-jansi", \
+  ]
+checkCombineTagsWithOr = B"false"
+checkEnabled = B"true"
+checkForceInstantExecution = B"false"
+checkIgnore = [ \
+  "", \
+  ]
+checkOverrideGlobalTimeoutStr = ""
+checkTags = "*"
+logEnabled = B"true"
+logLevel = "DEBUG"
+logPatterns = [ \
+  ".* java\\.lang\\.OutOfMemoryError:.*", \
+  ]
+logResetFinding = B"false"
+waitAfterStart = L"60000"
+
 etc/de.mhus.osgi.healthservlet.ReadyServlet.cfg
+
+bundlesEnabled = B"true"
+bundlesIgnore = [ \
+  "org.apache.karaf.features.extension", \
+  "org.apache.aries.blueprint.core.compatibility", \
+  "org.apache.karaf.shell.console", \
+  "org.jline.terminal-jansi", \
+  ]
+checkCombineTagsWithOr = B"false"
+checkEnabled = B"true"
+checkForceInstantExecution = B"false"
+checkIgnore = [ \
+  "", \
+  ]
+checkOverrideGlobalTimeoutStr = ""
+checkTags = "*"
+logEnabled = B"true"
+logLevel = "DEBUG"
+logPatterns = [ \
+  ".* java\\.lang\\.OutOfMemoryError:.*", \
+  ]
+logResetFinding = B"false"
 ```
 
 ### Start Wait
@@ -85,4 +132,29 @@ checkCombineTagsWithOr: false - Filter will use or instead of and
 checkTags: "*" - Filter for special tags
 checkForceInstantExecution: false - Force execution even if the period of execution is not finished
 checkOverrideGlobalTimeoutStr: ""
+```
+
+## Installation
+
+You need to install the felix health framework and the check servlet
+
+```
+felix.healthcheck.api.version=2.0.2
+felix.healthcheck.core.version=2.0.6
+felix.healthcheck.generalchecks.version=2.0.4
+mhus-osgi-servlets.version=7.0.0
+
+install -s mvn:org.apache.felix/org.apache.felix.healthcheck.api/${felix.healthcheck.api.version}
+install -s mvn:org.apache.felix/org.apache.felix.healthcheck.core/${felix.healthcheck.core.version}
+install -s mvn:org.apache.felix/org.apache.felix.healthcheck.generalchecks/${felix.healthcheck.generalchecks.version}
+install -s mvn:de.mhus.osgi/health-servlet/${mhus-osgi-servlets.version}
+```
+
+If you want to use the felix webconsole extensio too, install the console extension:
+
+```
+felix.healthcheck.webconsoleplugin.version=2.0.0
+
+feature:install webconsole
+install -s mvn:org.apache.felix/org.apache.felix.healthcheck.webconsoleplugin/${felix.healthcheck.webconsoleplugin.version}
 ```
