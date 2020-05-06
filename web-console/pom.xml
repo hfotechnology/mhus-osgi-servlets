@@ -24,7 +24,7 @@
 	<description>commands OSGi blueprint bundle project.</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>7.0.0-SNAPSHOT</version>
+		<version>7.0.0</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
