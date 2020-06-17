@@ -118,7 +118,7 @@ public class HealthServlet extends HttpServlet {
             tracker.close();
         tracker = null;
         this.ctx = null;
-        ctx.getProperties().put("waitAfterStart", 100);
+        //ctx.getProperties().put("waitAfterStart", 100);
     }
     
     @Modified
