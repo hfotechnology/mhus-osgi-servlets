@@ -17,104 +17,114 @@ import org.osgi.service.component.ComponentContext;
 public class HealthCheckUtil {
 
     public static final int ERROR_INT = 3;
-    public static final int WARN_INT  = 4;
-    public static final int INFO_INT  = 6;
+    public static final int WARN_INT = 4;
+    public static final int INFO_INT = 6;
     public static final int DEBUG_INT = 7;
-    public static final int ALL_INT   = 100;
-    
-    public enum LOG_LEVEL { 
+    public static final int ALL_INT = 100;
+
+    public enum LOG_LEVEL {
         ERROR {
             @Override
             public int toInt() {
                 return ERROR_INT;
-                }
-            }, 
+            }
+        },
         WARN {
             @Override
             public int toInt() {
                 return WARN_INT;
-                }
-            }, 
+            }
+        },
         INFO {
             @Override
             public int toInt() {
                 return INFO_INT;
-                }
-            }, 
+            }
+        },
         DEBUG {
             @Override
             public int toInt() {
                 return DEBUG_INT;
-                }
-            }, 
+            }
+        },
         ALL {
             @Override
             public int toInt() {
                 return ALL_INT;
-                }
-            };
-
-            public int toInt() {
-                return 0;
             }
+        };
+
+        public int toInt() {
+            return 0;
+        }
     }
 
     public static boolean checkBundles(ComponentContext ctx, ConfigValues config, PrintWriter out) {
         boolean healthy = true;
         for (Bundle bundle : ctx.getBundleContext().getBundles()) {
             if (bundle.getState() != Bundle.ACTIVE) {
-                if (config.bundlesIgnore.contains(bundle.getSymbolicName()))
-                    continue;
-                if (out != null)
-                    out.println("Bundle: " + bundle.getSymbolicName());
-                else
-                    return false;
+                if (config.bundlesIgnore.contains(bundle.getSymbolicName())) continue;
+                if (out != null) out.println("Bundle: " + bundle.getSymbolicName());
+                else return false;
                 healthy = false;
             }
         }
         return healthy;
     }
 
-    public static boolean checkOSGiHealthServices(HealthCheckExecutor healthCheckExecutor, ConfigValues config, PrintWriter out, Logger log, Status ... alertStatus ) {
+    public static boolean checkOSGiHealthServices(
+            HealthCheckExecutor healthCheckExecutor,
+            ConfigValues config,
+            PrintWriter out,
+            Logger log,
+            Status... alertStatus) {
         if (healthCheckExecutor == null) {
             out.println("Error: healthCheckExecutor not present");
             return false;
         }
-        
+
         boolean healthy = true;
         HealthCheckExecutionOptions options = new HealthCheckExecutionOptions();
         options.setCombineTagsWithOr(config.checkCombineTagsWithOr);
         options.setForceInstantExecution(config.checkForceInstantExecution);
         if (isNotBlank(config.checkOverrideGlobalTimeoutStr))
             try {
-                options.setOverrideGlobalTimeout(Integer.valueOf(config.checkOverrideGlobalTimeoutStr));
+                options.setOverrideGlobalTimeout(
+                        Integer.valueOf(config.checkOverrideGlobalTimeoutStr));
             } catch (NumberFormatException nfe) {
                 // override not set in UI
             }
-        HealthCheckSelector selector = isNotBlank(config.checkTags) ? HealthCheckSelector.tags(config.checkTags.split(",")) : HealthCheckSelector.empty();
-        Collection<HealthCheckExecutionResult> results = healthCheckExecutor.execute(selector, options);
+        HealthCheckSelector selector =
+                isNotBlank(config.checkTags)
+                        ? HealthCheckSelector.tags(config.checkTags.split(","))
+                        : HealthCheckSelector.empty();
+        Collection<HealthCheckExecutionResult> results =
+                healthCheckExecutor.execute(selector, options);
         for (HealthCheckExecutionResult result : results) {
             try {
                 String name = result.getHealthCheckMetadata().getName();
                 if (config.checkIgnore.contains(name)) continue;
                 Result status = result.getHealthCheckResult();
                 for (Entry entry : status) {
-                    out.println("OSGiHealth: " + name + "=" + entry.getLogLevel() + "," + entry.getMessage());
+                    out.println(
+                            "OSGiHealth: "
+                                    + name
+                                    + "="
+                                    + entry.getLogLevel()
+                                    + ","
+                                    + entry.getMessage());
                     Status s = entry.getStatus();
-                    for (Status alert : alertStatus)
-                        if (s == alert)
-                            healthy = false;
+                    for (Status alert : alertStatus) if (s == alert) healthy = false;
                 }
             } catch (Throwable t) {
-                log.throwing("","",t);
+                log.throwing("", "", t);
             }
         }
-        
+
         return healthy;
     }
 
     private static boolean isNotBlank(String str) {
         return str != null && str.length() > 0;
     }
-
 }

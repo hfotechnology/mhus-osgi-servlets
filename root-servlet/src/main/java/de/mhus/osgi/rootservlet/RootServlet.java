@@ -48,8 +48,7 @@ rule0.redirect=
         service = Servlet.class,
         property = "alias=/*",
         servicefactory = true,
-        configurationPolicy = ConfigurationPolicy.OPTIONAL
-        )
+        configurationPolicy = ConfigurationPolicy.OPTIONAL)
 @Designate(ocd = RootServlet.Config.class)
 public class RootServlet extends HttpServlet {
 
@@ -61,12 +60,17 @@ public class RootServlet extends HttpServlet {
 
     @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes")
     public @interface Config {
-        @AttributeDefinition(name = "Redirect", description = "Redirect a path to another one, key is a regex, the value the target path, e.g. .*=/ui")
+        @AttributeDefinition(
+                name = "Redirect",
+                description =
+                        "Redirect a path to another one, key is a regex, the value the target path, e.g. .*=/ui")
         String[] redirect() default {};
+
         String errorMsg() default "";
+
         int errorNr() default 404;
     }
-    
+
     @Activate
     public void activate(ComponentContext ctx, Config c) {
         loadConfig(c);
@@ -82,8 +86,8 @@ public class RootServlet extends HttpServlet {
         for (String entry : c.redirect()) {
             int pos = entry.indexOf('=');
             if (pos > 0) {
-                String regex = entry.substring(0,pos);
-                String target = entry.substring(pos+1);
+                String regex = entry.substring(0, pos);
+                String target = entry.substring(pos + 1);
                 Pattern pattern = Pattern.compile(regex);
                 redirects.put(pattern, target);
             }
@@ -114,9 +118,7 @@ public class RootServlet extends HttpServlet {
         }
         log.fine("No match for path: " + path);
 
-        if (errorMsg.length() > 0)
-            res.sendError(errorNr, errorMsg);
-        else
-            res.sendError(errorNr);
+        if (errorMsg.length() > 0) res.sendError(errorNr, errorMsg);
+        else res.sendError(errorNr);
     }
 }

@@ -44,8 +44,7 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
         service = Servlet.class,
         property = "alias=/system/ready/*",
         servicefactory = true,
-        configurationPolicy = ConfigurationPolicy.OPTIONAL
-        )
+        configurationPolicy = ConfigurationPolicy.OPTIONAL)
 @Designate(ocd = ReadyServlet.Config.class)
 public class ReadyServlet extends HttpServlet {
 
@@ -59,44 +58,71 @@ public class ReadyServlet extends HttpServlet {
 
     @ObjectClassDefinition(name = "Ready Check Servlet", description = "For Kubernetes")
     public @interface Config {
-        @AttributeDefinition(name = "Bundles ignore", description = "List of Bundles to ignore (separate by comma)")
+        @AttributeDefinition(
+                name = "Bundles ignore",
+                description = "List of Bundles to ignore (separate by comma)")
         String[] bundlesIgnore() default {
             "org.apache.karaf.features.extension",
             "org.apache.aries.blueprint.core.compatibility",
             "org.apache.karaf.shell.console",
             "org.jline.terminal-jansi"
         };
-        @AttributeDefinition(name = "Enable bundle check", description = "Validate if all bundles are active")
+
+        @AttributeDefinition(
+                name = "Enable bundle check",
+                description = "Validate if all bundles are active")
         boolean bundlesEnabled() default true;
-        @AttributeDefinition(name = "Enable log check", description = "Introspect the own logs and alert for patterns")
+
+        @AttributeDefinition(
+                name = "Enable log check",
+                description = "Introspect the own logs and alert for patterns")
         boolean logEnabled() default true;
+
         @AttributeDefinition(name = "Log level to check", description = "Minimum log level to scan")
         HealthCheckUtil.LOG_LEVEL logLevel() default HealthCheckUtil.LOG_LEVEL.DEBUG;
+
         @AttributeDefinition(name = "Log patterns", description = "List of patterns to watch for")
         String[] logPatterns() default {".* java\\.lang\\.OutOfMemoryError:.*"};
+
         @AttributeDefinition(name = "Reset Findings", description = "Reset findings after delivery")
         boolean logResetFinding() default false;
-        @AttributeDefinition(name = "Enable OSGi Health Check", description = "Enable checking of OSGi Health Check services")
+
+        @AttributeDefinition(
+                name = "Enable OSGi Health Check",
+                description = "Enable checking of OSGi Health Check services")
         boolean checkEnabled() default true;
-        @AttributeDefinition(name = "Ignore OSGi Checks", description = "List of OSGi Health Check services to ignore by name")
+
+        @AttributeDefinition(
+                name = "Ignore OSGi Checks",
+                description = "List of OSGi Health Check services to ignore by name")
         String[] checkIgnore() default {};
-        @AttributeDefinition(name = "Combine tags with or", description = "Combine tags with logical 'OR' instead of the default 'AND'")
+
+        @AttributeDefinition(
+                name = "Combine tags with or",
+                description = "Combine tags with logical 'OR' instead of the default 'AND'")
         boolean checkCombineTagsWithOr() default false;
-        @AttributeDefinition(name = "Force Execution", description = "Force instant execution (no cache, async checks are executed)")
+
+        @AttributeDefinition(
+                name = "Force Execution",
+                description = "Force instant execution (no cache, async checks are executed)")
         boolean checkForceInstantExecution() default false;
+
         @AttributeDefinition(name = "Override global timeout", description = "")
         String checkOverrideGlobalTimeoutStr() default "";
-        @AttributeDefinition(name = "Health Check tags (comma-separated)", description = "Enter tags to selected health checks to be executed. Leave empty to execute default checks or use '*' to execute all checks. Prefix a tag with a minus sign (-) to omit checks having that tag (can be also used in combination with '*', e.g. '*,-excludedtag').")
+
+        @AttributeDefinition(
+                name = "Health Check tags (comma-separated)",
+                description =
+                        "Enter tags to selected health checks to be executed. Leave empty to execute default checks or use '*' to execute all checks. Prefix a tag with a minus sign (-) to omit checks having that tag (can be also used in combination with '*', e.g. '*,-excludedtag').")
         String checkTags() default "*";
     }
-    
-    
+
     @Reference(cardinality = ReferenceCardinality.OPTIONAL)
     public void setHealthCheckExecutor(HealthCheckExecutor healthCheckExecutor) {
         log.info("Found healthCheckExecutor");
         this.healthCheckExecutor = healthCheckExecutor;
     }
-    
+
     @Activate
     public void activate(ComponentContext ctx, Config c) {
         this.ctx = ctx;
@@ -110,8 +136,7 @@ public class ReadyServlet extends HttpServlet {
 
     @Deactivate
     public void deactivate(ComponentContext ctx) {
-        if (tracker != null)
-            tracker.close();
+        if (tracker != null) tracker.close();
         tracker = null;
         this.ctx = null;
     }
@@ -122,8 +147,7 @@ public class ReadyServlet extends HttpServlet {
         if (config.logEnabled && tracker == null) {
             tracker = new LogServiceTracker(ctx.getBundleContext(), LogService.class, null, config);
             tracker.open();
-        } else
-        if (!config.logEnabled && tracker != null) {
+        } else if (!config.logEnabled && tracker != null) {
             tracker.close();
             tracker = null;
         }
@@ -144,22 +168,26 @@ public class ReadyServlet extends HttpServlet {
 
         // check if bundles are ok
         if (config.bundlesEnabled) {
-            if (!HealthCheckUtil.checkBundles(ctx, config, out))
-                healthy = false;
+            if (!HealthCheckUtil.checkBundles(ctx, config, out)) healthy = false;
         }
 
         // check log
         if (config.logEnabled && tracker.logFindings.size() > 0) {
             healthy = false;
-            for (String finding : tracker.logFindings)
-                out.println("Log: " + finding);
-            if (config.logResetFinding)
-                tracker.logFindings.clear();
+            for (String finding : tracker.logFindings) out.println("Log: " + finding);
+            if (config.logResetFinding) tracker.logFindings.clear();
         }
 
         // check felix health check
         if (config.checkEnabled) {
-            HealthCheckUtil.checkOSGiHealthServices(healthCheckExecutor, config, out, log, Status.CRITICAL, Status.HEALTH_CHECK_ERROR, Status.WARN);
+            HealthCheckUtil.checkOSGiHealthServices(
+                    healthCheckExecutor,
+                    config,
+                    out,
+                    log,
+                    Status.CRITICAL,
+                    Status.HEALTH_CHECK_ERROR,
+                    Status.WARN);
         }
 
         if (!healthy) {
@@ -182,5 +210,4 @@ public class ReadyServlet extends HttpServlet {
             log.severe("Ready check failed:\n" + content);
         }
     }
-
 }

@@ -23,14 +23,13 @@ public class LogServiceTracker extends ServiceTracker<LogService, LogService> {
 
     private ConfigValues config;
 
-    Set<String>  logFindings = Collections.synchronizedSet(new HashSet<>());
+    Set<String> logFindings = Collections.synchronizedSet(new HashSet<>());
 
     public LogServiceTracker(
             BundleContext context,
             Class<LogService> clazz,
             ServiceTrackerCustomizer<LogService, LogService> customizer,
-            ConfigValues config
-            ) {
+            ConfigValues config) {
         super(context, clazz, customizer);
         this.config = config;
         this.appender = event -> printEvent(event);
@@ -53,7 +52,7 @@ public class LogServiceTracker extends ServiceTracker<LogService, LogService> {
         service.removeAppender(appender);
         // stopTail();
     }
-    
+
     private void printEvent(PaxLoggingEvent event) {
         // scan log
         try {
@@ -62,8 +61,7 @@ public class LogServiceTracker extends ServiceTracker<LogService, LogService> {
                 if (sl > config.logLevel) return;
                 String msg = event.getMessage();
                 for (Pattern pattern : config.logPatterns) {
-                    if (pattern.matcher(msg).matches())
-                        logFindings.add(pattern.pattern());
+                    if (pattern.matcher(msg).matches()) logFindings.add(pattern.pattern());
                 }
             }
         } catch (NoClassDefFoundError e) {
@@ -72,5 +70,4 @@ public class LogServiceTracker extends ServiceTracker<LogService, LogService> {
             // bundle has been refreshed somehow.
         }
     }
-
 }

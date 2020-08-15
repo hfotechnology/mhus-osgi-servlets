@@ -44,27 +44,37 @@ import org.osgi.service.metatype.annotations.ObjectClassDefinition;
         service = Servlet.class,
         property = "alias=/dump/*",
         servicefactory = true,
-        configurationPolicy = ConfigurationPolicy.OPTIONAL
-        )
+        configurationPolicy = ConfigurationPolicy.OPTIONAL)
 @Designate(ocd = DumpServlet.Config.class)
 public class DumpServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private Map<String,Definition> pathes = new HashMap<>();
+    private Map<String, Definition> pathes = new HashMap<>();
     private static Logger log = Logger.getLogger(DumpServlet.class.getCanonicalName());
 
     @ObjectClassDefinition(name = "Dump Servlet", description = "Dump requests into files")
     public @interface Config {
-        @AttributeDefinition(name = "Path", description = "insert path='file name' entries, e.g. test=data/log/test.log")
+        @AttributeDefinition(
+                name = "Path",
+                description = "insert path='file name' entries, e.g. test=data/log/test.log")
         String[] pathes() default {};
-        @AttributeDefinition(name = "Status", description = "Status return code for entries, e.g. test=404")
+
+        @AttributeDefinition(
+                name = "Status",
+                description = "Status return code for entries, e.g. test=404")
         String[] status() default {};
-        @AttributeDefinition(name = "Content Type", description = "Content Type for entries, e.g. test=application/json")
+
+        @AttributeDefinition(
+                name = "Content Type",
+                description = "Content Type for entries, e.g. test=application/json")
         String[] contentType() default {};
-        @AttributeDefinition(name = "Payload", description = "Return payload for entries, e.g. test={\"key\":\"value\"}")
+
+        @AttributeDefinition(
+                name = "Payload",
+                description = "Return payload for entries, e.g. test={\"key\":\"value\"}")
         String[] payload() default {};
     }
-    
+
     public static class Definition {
         String path;
         String file;
@@ -89,19 +99,17 @@ public class DumpServlet extends HttpServlet {
             int pos = p.indexOf('=');
             if (pos > 0) {
                 Definition def = new Definition();
-                def.path = p.substring(0,pos);
-                def.file = p.substring(pos+1);
-                
+                def.path = p.substring(0, pos);
+                def.file = p.substring(pos + 1);
+
                 String prefix = def.path + "=";
                 for (String x : c.status())
                     if (x.startsWith(prefix))
                         def.status = Integer.parseInt(x.substring(prefix.length()));
                 for (String x : c.contentType())
-                    if (x.startsWith(prefix))
-                        def.contentType = x.substring(prefix.length());
+                    if (x.startsWith(prefix)) def.contentType = x.substring(prefix.length());
                 for (String x : c.payload())
-                    if (x.startsWith(prefix))
-                        def.payload = x.substring(prefix.length());
+                    if (x.startsWith(prefix)) def.payload = x.substring(prefix.length());
 
                 pathes.put(def.path, def);
             }
@@ -123,7 +131,7 @@ public class DumpServlet extends HttpServlet {
             if (key.startsWith("_")) continue;
             if (path.matches(key)) {
                 def = pathes.get(key);
-                writeTo(req,def.file);
+                writeTo(req, def.file);
                 break;
             }
         }
@@ -133,8 +141,7 @@ public class DumpServlet extends HttpServlet {
         } else {
             res.setStatus(def.status);
             res.setContentType(def.contentType);
-            if (def.payload != null)
-                res.getWriter().write(def.payload);
+            if (def.payload != null) res.getWriter().write(def.payload);
         }
     }
 
@@ -146,8 +153,7 @@ public class DumpServlet extends HttpServlet {
                 writeTo(req, out);
                 out.close();
                 log.info(new String(baos.toByteArray()));
-            } else
-            if (file.equals("-")) {
+            } else if (file.equals("-")) {
                 writeTo(req, System.out);
             } else {
                 FileOutputStream fos = new FileOutputStream(file, true);
@@ -155,10 +161,12 @@ public class DumpServlet extends HttpServlet {
                 writeTo(req, out);
                 out.close();
             }
-        } catch (Throwable t) {}
+        } catch (Throwable t) {
+        }
     }
 
-    private void writeTo(HttpServletRequest req, PrintStream out) throws IOException, InterruptedException {
+    private void writeTo(HttpServletRequest req, PrintStream out)
+            throws IOException, InterruptedException {
         out.println("----- Request " + new Date() + " from " + req.getRemoteAddr());
         out.println(req.getMethod() + " " + req.getPathInfo() + " " + req.getQueryString());
         Enumeration<String> headerNames = req.getHeaderNames();
@@ -171,20 +179,17 @@ public class DumpServlet extends HttpServlet {
                 out.println(name + ": " + header);
                 done = true;
             }
-            if (!done)
-                out.println(name + ":");
+            if (!done) out.println(name + ":");
         }
-        
+
         out.println();
         ServletInputStream is = req.getInputStream();
         byte[] buffer = new byte[1024];
         while (true) {
             int len = is.read(buffer);
             if (len < 0) break;
-            if (len == 0)
-                Thread.sleep(200);
-            else
-                out.write(buffer, 0, len);
+            if (len == 0) Thread.sleep(200);
+            else out.write(buffer, 0, len);
         }
         out.flush();
     }

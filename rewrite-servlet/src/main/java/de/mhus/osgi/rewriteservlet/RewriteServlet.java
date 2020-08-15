@@ -36,10 +36,7 @@ import org.osgi.service.component.annotations.Component;
 
 
 */
-@Component(
-        service = Servlet.class,
-        property = "alias=/rewrite/*",
-        servicefactory = true)
+@Component(service = Servlet.class, property = "alias=/rewrite/*", servicefactory = true)
 public class RewriteServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
