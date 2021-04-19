@@ -60,7 +60,7 @@ public class RootServlet extends HttpServlet {
     private String errorMsg;
     private int errorNr;
 
-    @ObjectClassDefinition(name = "Health Check Servlet", description = "For Kubernetes")
+    @ObjectClassDefinition(name = "Redirect Root Service", description = "Redirect root to the main application")
     public @interface Config {
         @AttributeDefinition(
                 name = "Redirect",
@@ -84,8 +84,10 @@ public class RootServlet extends HttpServlet {
     }
 
     private void loadConfig(Config c) {
+        log.info("Configure start");
         redirects.clear();
         for (String entry : c.redirect()) {
+            log.info("Configure redirect " + entry);
             int pos = entry.indexOf('=');
             if (pos > 0) {
                 String regex = entry.substring(0, pos);

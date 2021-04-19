@@ -17,7 +17,7 @@ You can define a list of regex and the target. The target can use groups of the 
 e.g.
 
 ```
-redirects = [ \
+redirect = [ \
   ".*=/ui", \
   ]
 ```
@@ -25,7 +25,7 @@ redirects = [ \
 Redirects every path to /ui
 
 ```
-redirects = [ \
+redirect = [ \
   "(.*)=/ui?origin=$1", \
   ]
 ```
