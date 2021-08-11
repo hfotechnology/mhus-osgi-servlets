@@ -60,7 +60,9 @@ public class RootServlet extends HttpServlet {
     private String errorMsg;
     private int errorNr;
 
-    @ObjectClassDefinition(name = "Redirect Root Service", description = "Redirect root to the main application")
+    @ObjectClassDefinition(
+            name = "Redirect Root Service",
+            description = "Redirect root to the main application")
     public @interface Config {
         @AttributeDefinition(
                 name = "Redirect",
