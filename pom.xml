@@ -29,7 +29,7 @@
 	<packaging>pom</packaging>
 	<name>MHUS OSGi Servlet Tools</name>
 	<description>A set of servlets to improve OSGi frameworks and karaf</description>
-	<url>http://www.mhus.de</url>
+	<url>http://www.mhus.info</url>
     <properties>
         <mhus-osgi-servlets.version>${project.version}</mhus-osgi-servlets.version>
     </properties>
@@ -42,8 +42,8 @@
 		</license>
 	</licenses>
 	<scm>
-		<url>https://github.com/mhus/mhus-osgi-servlets</url>
-		<connection>scm:git:https://github.com/mhus/mhus-osgi-servlets/</connection>
+		<url>https://github.com/mhus-info/mhus-osgi-servlets</url>
+		<connection>scm:git:https://github.com/mhus-info/mhus-osgi-servlets/</connection>
 	</scm>
 	<developers>
 		<developer>
