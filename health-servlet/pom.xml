@@ -24,7 +24,7 @@
 	<description>Servlet to monitor health state of karaf to be used bu kubernetes monitoring</description>
 	<parent>
 		<groupId>de.mhus.osgi</groupId>
-		<version>7.4.0-SNAPSHOT</version>
+		<version>7.4.0</version>
 		<artifactId>mhus-osgi-servlets</artifactId>
 	</parent>
 
